@@ -1,0 +1,9 @@
+[submodule "Libraries/rttr/rttr"]
+	path = Libraries/rttr/rttr
+	url = https://github.com/rttrorg/rttr
+[submodule "Libraries/glm/glm"]
+	path = Libraries/glm/glm
+	url = https://github.com/g-truc/glm
+[submodule "Libraries/glfw/glfw"]
+	path = Libraries/glfw/glfw
+	url = https://github.com/glfw/glfw
