@@ -1,6 +1,6 @@
 cmake_minimum_required(VERSION 3.10)
 
-project(Upsilon CXX)
+project(Upsilon)
 
 # Main options
 option(UPSILON_BUILD_GAME "ON to build the game engine of Upsilon" ON)
