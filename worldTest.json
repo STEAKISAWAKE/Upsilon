@@ -1,0 +1,12 @@
+{
+    "WorldName" : "WorldTest",
+    "Actors" : {
+        "TestActor" : {
+            "ActorName" : "TestActor",
+            "ActorType" : "TestActor",
+            "ActorProperties" : {
+                ""
+            }
+        }
+    }
+}

@@ -1,10 +1,8 @@
 #include "Render.h"
 
-#include <GLFW/glfw3.h>
-
+#include "Shader.h"
 #include "VulkanRenderRHI.h"
 #include "Log.h"
-
 
 
 RTTR_REGISTRATION
@@ -25,20 +23,21 @@ RTTR_REGISTRATION
         
         .method("Initalize", &Render::Initalize)
         .method("Cleanup", &Render::Cleanup)
-        .method("SwitchRHI", &Render::SwitchRHI)
+        .method("SwitchRHITo", &Render::SwitchRHITo)
     ;
 }
+
 
 Render::Render()
 {
     if(!glfwInit())
     {
-        Log("Render Initalization", "Could not initalize glfw!");
+        ULog("Render Initalization", "Could not initalize glfw!");
     }
 
     // Create Vulkan RHI as a default
     RHI = new VulkanRenderRHI();
-
+    RHI->render = this;
 }
 
 
@@ -54,7 +53,34 @@ Render::Render(E_RHITypes RHIType) : Render() // Call glfwInit
             break;
         
         case OpenGLRHI:
-            // RHI = new OpenGLRenderRHI();
+            // RHI = new OpenGLRenderRHI();/* code */
             break;
     }
+
+    RHI->render = this;
+}
+
+
+void Render::Initalize()
+{   
+    glfwWindowHint(GLFW_CLIENT_API, GLFW_NO_API);
+    glfwWindowHint(GLFW_RESIZABLE, GLFW_FALSE);
+
+    window = glfwCreateWindow(1920, 1080, "Upsilon", glfwGetPrimaryMonitor(), NULL);
+
+    RHI->Initalize();
+}
+
+
+void Render::Cleanup()
+{
+    RHI->Cleanup();
+
+    glfwDestroyWindow(window);
+}
+
+
+void Render::SwitchRHITo(E_RHITypes RHIType)
+{
+    RHI->Cleanup();
 }

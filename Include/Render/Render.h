@@ -3,8 +3,9 @@
 
 #include <rttr/registration>
 
-class RenderRHI;
+#include <GLFW/glfw3.h>
 
+class RenderRHI;
 
 enum E_RHITypes
 {
@@ -27,13 +28,15 @@ public:
 public:
 
     RenderRHI* RHI;
+    
+    GLFWwindow* window;
 
 // Methods
 public:
     void Initalize();
     void Cleanup();
 
-    void SwitchRHI(E_RHITypes RHIType);
+    void SwitchRHITo(E_RHITypes RHIType);
 
 
 };
