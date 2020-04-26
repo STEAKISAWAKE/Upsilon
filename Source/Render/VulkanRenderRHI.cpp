@@ -43,6 +43,8 @@ const std::vector<const char*> deviceExtensions =
     VK_KHR_SWAPCHAIN_EXTENSION_NAME
 };
 
+const int MAX_FRAMES_IN_FLIGHT = 2;
+
 // Constructors
 VulkanRenderRHI::VulkanRenderRHI()
 {
@@ -261,7 +263,7 @@ VkPresentModeKHR VulkanRenderRHI::ChooseSwapPresentMode(const std::vector<VkPres
 {
     for(const auto& availablePresentMode : availablePresentModes)
     {
-        if(availablePresentMode == VK_PRESENT_MODE_MAILBOX_KHR)
+        if(availablePresentMode == VK_PRESENT_MODE_IMMEDIATE_KHR)
         {
             return availablePresentMode;
         }
@@ -279,9 +281,13 @@ VkExtent2D VulkanRenderRHI::ChooseSwapExtent(const VkSurfaceCapabilitiesKHR& cap
     else
     {   
         int width, height;
-        glfwGetWindowSize(render->window, &width, &height);
+        glfwGetFramebufferSize(render->window, &width, &height);
 
-        VkExtent2D actualExtent = {(uint32_t)width, (uint32_t)height};
+        VkExtent2D actualExtent = 
+        {
+            static_cast<uint32_t>(width), 
+            static_cast<uint32_t>(height)
+        };
 
         actualExtent.width = std::max(capabilities.minImageExtent.width, std::min(capabilities.maxImageExtent.width, actualExtent.width));
         actualExtent.height = std::max(capabilities.minImageExtent.height, std::min(capabilities.maxImageExtent.height, actualExtent.height));
@@ -290,6 +296,11 @@ VkExtent2D VulkanRenderRHI::ChooseSwapExtent(const VkSurfaceCapabilitiesKHR& cap
     }
 }
 
+void FramebufferResizeCallback(GLFWwindow* window, int width, int height)
+{
+    auto vulkanRHI = reinterpret_cast<VulkanRenderRHI*>(glfwGetWindowUserPointer(window));
+    vulkanRHI->framebufferResized = true;
+}
 
 //////////////////////
 // Vulkan Functions //
@@ -297,6 +308,9 @@ VkExtent2D VulkanRenderRHI::ChooseSwapExtent(const VkSurfaceCapabilitiesKHR& cap
 
 void VulkanRenderRHI::Initalize()
 {
+    glfwSetWindowUserPointer(render->window, this);
+    glfwSetFramebufferSizeCallback(render->window, FramebufferResizeCallback);
+
     CreateInstance();
     SetupDebugMessenger();
     CreateSurface();
@@ -320,35 +334,24 @@ void VulkanRenderRHI::Initalize()
     CreateFrameBuffers();
     CreateCommandPool();
     CreateCommandBuffers();
-    CreateSemaphores();
+    CreateSyncObjects();
 }
 
 void VulkanRenderRHI::Cleanup()
 {
-    vkDestroySemaphore(device, renderFinishedSemaphore, nullptr);
-    vkDestroySemaphore(device, imageAvailableSemaphore, nullptr);
+    vkDeviceWaitIdle(device);
+
+    CleanupSwapChain();
+
+    for(int i = 0; i < MAX_FRAMES_IN_FLIGHT; i++)
+    {
+        vkDestroySemaphore(device, renderFinishedSemaphore[i], nullptr);
+        vkDestroySemaphore(device, imageAvailableSemaphore[i], nullptr);
+        vkDestroyFence(device, inFlightFences[i], nullptr);
+    }
 
     vkDestroyCommandPool(device, commandPool, nullptr);
-
-    for(auto framebuffer : swapChainFramebuffers)
-    {
-        vkDestroyFramebuffer(device, framebuffer, nullptr);
-    }
-
-    for(auto pipeline : graphicsPipelines)
-    {
-        vkDestroyPipeline(device, pipeline, nullptr);
-    }
-
-    vkDestroyPipelineLayout(device, pipelineLayout, nullptr);
-    vkDestroyRenderPass(device, renderPass, nullptr);
-
-    for(auto imageView : swapChainImageViews)
-    {
-        vkDestroyImageView(device, imageView, nullptr);
-    }
-
-    vkDestroySwapchainKHR(device, swapChain, nullptr);
+    
     vkDestroyDevice(device, nullptr);
 
     if(enableValidationLayers)
@@ -362,14 +365,33 @@ void VulkanRenderRHI::Cleanup()
 
 void VulkanRenderRHI::DrawFrame()
 {
+    vkWaitForFences(device, 1, &inFlightFences[currentFrame], VK_TRUE, UINT64_MAX);
 
     uint32_t imageIndex;
-    vkAcquireNextImageKHR(device, swapChain, UINT64_MAX, imageAvailableSemaphore, VK_NULL_HANDLE, &imageIndex);
+    VkResult result = vkAcquireNextImageKHR(device, swapChain, UINT64_MAX, imageAvailableSemaphore[currentFrame], VK_NULL_HANDLE, &imageIndex);
+
+    if(result == VK_ERROR_OUT_OF_DATE_KHR)
+    {
+        RecreateSwapChain();
+        return;
+    }
+    else if(result != VK_SUCCESS && result != VK_SUBOPTIMAL_KHR)
+    {
+        ULogError("Vulkan Draw Frame", "Could not aquire swap chain image!");
+    }
+    
+
+    if(imagesInFlight[imageIndex] != VK_NULL_HANDLE)
+    {
+        vkWaitForFences(device, 1, &imagesInFlight[imageIndex], VK_TRUE, UINT64_MAX);
+    }
+
+    imagesInFlight[imageIndex] = inFlightFences[currentFrame];
 
     VkSubmitInfo submitInfo{};
     submitInfo.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO;
 
-    VkSemaphore waitSemaphores[] = {imageAvailableSemaphore};
+    VkSemaphore waitSemaphores[] = {imageAvailableSemaphore[currentFrame]};
     VkPipelineStageFlags waitStages[] = {VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT};
     submitInfo.waitSemaphoreCount = 1;
     submitInfo.pWaitSemaphores = waitSemaphores;
@@ -378,11 +400,13 @@ void VulkanRenderRHI::DrawFrame()
     submitInfo.commandBufferCount = 1;
     submitInfo.pCommandBuffers = &commandBuffers[imageIndex];
 
-    VkSemaphore signalSemaphores[] = {renderFinishedSemaphore};
+    VkSemaphore signalSemaphores[] = {renderFinishedSemaphore[currentFrame]};
     submitInfo.signalSemaphoreCount = 1;
     submitInfo.pSignalSemaphores = signalSemaphores;
 
-    if(vkQueueSubmit(graphicsQueue, 1, &submitInfo, VK_NULL_HANDLE) != VK_SUCCESS)
+    vkResetFences(device, 1, &inFlightFences[currentFrame]);
+
+    if(vkQueueSubmit(graphicsQueue, 1, &submitInfo, inFlightFences[currentFrame]) != VK_SUCCESS)
     {
         ULogError("Vulkan Draw Frame", "Could not submit draw command buffer!");
     }
@@ -399,8 +423,19 @@ void VulkanRenderRHI::DrawFrame()
     presentInfo.pImageIndices = &imageIndex;
     presentInfo.pResults = nullptr;
 
-    vkQueuePresentKHR(presentQueue, &presentInfo);
+    result = vkQueuePresentKHR(presentQueue, &presentInfo);
 
+    if(result == VK_ERROR_OUT_OF_DATE_KHR || result == VK_SUBOPTIMAL_KHR || framebufferResized)
+    {
+        framebufferResized = false;
+        RecreateSwapChain();
+    }
+    else if(result != VK_SUCCESS)
+    {
+        ULogError("Vulan Render Frame", "Could not present swap chain image!");
+    }
+
+    currentFrame = (currentFrame + 1) % MAX_FRAMES_IN_FLIGHT;
 }
 
 
@@ -797,9 +832,7 @@ void VulkanRenderRHI::CreateCommandBuffers()
         if(vkBeginCommandBuffer(commandBuffers[i], &beginInfo) != VK_SUCCESS)
         {
             ULogError("Vulkan Command Buffers", "Could not begin recording command buffer!");
-        }    {
-        ULogError("Vulkan Semaphore", "Could not create semaphores!");
-    }
+        }
 
         VkRenderPassBeginInfo renderPassInfo = {};
         renderPassInfo.sType = VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO;
@@ -824,18 +857,91 @@ void VulkanRenderRHI::CreateCommandBuffers()
     }
 }
 
-void VulkanRenderRHI::CreateSemaphores()
+void VulkanRenderRHI::CreateSyncObjects()
 {
+
+    imageAvailableSemaphore.resize(MAX_FRAMES_IN_FLIGHT);
+    renderFinishedSemaphore.resize(MAX_FRAMES_IN_FLIGHT);
+    inFlightFences.resize(MAX_FRAMES_IN_FLIGHT);
+    imagesInFlight.resize(swapChainImages.size(), VK_NULL_HANDLE);
+
     VkSemaphoreCreateInfo semaphoreInfo = {};
     semaphoreInfo.sType = VK_STRUCTURE_TYPE_SEMAPHORE_CREATE_INFO;
     
-    if(vkCreateSemaphore(device, &semaphoreInfo, nullptr, &imageAvailableSemaphore) != VK_SUCCESS ||
-       vkCreateSemaphore(device, &semaphoreInfo, nullptr, &renderFinishedSemaphore) != VK_SUCCESS)
-    {
-        ULogError("Vulkan Semaphore", "Could not create semaphores!");
-    }
-    
+    VkFenceCreateInfo fenceInfo = {};
+    fenceInfo.sType = VK_STRUCTURE_TYPE_FENCE_CREATE_INFO;
+    fenceInfo.flags = VK_FENCE_CREATE_SIGNALED_BIT;
 
+    for(int i = 0; i < MAX_FRAMES_IN_FLIGHT; i++)
+    {
+        if(vkCreateSemaphore(device, &semaphoreInfo, nullptr, &imageAvailableSemaphore[i]) != VK_SUCCESS ||
+        vkCreateSemaphore(device, &semaphoreInfo, nullptr, &renderFinishedSemaphore[i]) != VK_SUCCESS ||
+        vkCreateFence(device, &fenceInfo, nullptr, &inFlightFences[i]) != VK_SUCCESS)
+        {
+            ULogError("Vulkan Sync Objects", "Could not create syncronization objects for a frame!");
+        }
+    }
+}
+
+void VulkanRenderRHI::CleanupSwapChain()
+{
+    for(auto framebuffer : swapChainFramebuffers)
+    {
+        vkDestroyFramebuffer(device, framebuffer, nullptr);
+    }
+
+    vkFreeCommandBuffers(device, commandPool, static_cast<uint32_t>(commandBuffers.size()), commandBuffers.data());
+
+    for(auto pipeline : graphicsPipelines)
+    {
+        vkDestroyPipeline(device, pipeline, nullptr);
+    }
+
+    graphicsPipelines.clear();
+
+    vkDestroyPipelineLayout(device, pipelineLayout, nullptr);
+    vkDestroyRenderPass(device, renderPass, nullptr);
+
+    for(auto imageView : swapChainImageViews)
+    {
+        vkDestroyImageView(device, imageView, nullptr);
+    }
+
+    vkDestroySwapchainKHR(device, swapChain, nullptr);
+}
+
+void VulkanRenderRHI::RecreateSwapChain()
+{
+    int width = 0, height = 0;
+    glfwGetFramebufferSize(render->window, &width, &height);
+
+    while (width == 0 || height == 0) {
+                glfwWaitEvents();
+        glfwGetFramebufferSize(render->window, &width, &height);
+
+    }
+
+    vkDeviceWaitIdle(device);
+
+    CleanupSwapChain();
+
+    CreateSwapChain();
+    CreateImageViews();
+    CreateRenderPass();
+    int i;
+    for(auto shader : shaders)
+    {
+        static_cast<VulkanShader*>(shader.first)->Initalize();
+        static_cast<VulkanShader*>(shader.second)->Initalize();
+
+        CreateGraphicsPipeline(static_cast<VulkanShader*>(shader.first)->shaderModule, static_cast<VulkanShader*>(shader.second)->shaderModule);
+        
+        static_cast<VulkanShader*>(shader.first)->Cleanup();
+        static_cast<VulkanShader*>(shader.second)->Cleanup();
+    }
+    CreateFrameBuffers();
+    CreateCommandBuffers();
+    
 
 }
 

@@ -4,6 +4,10 @@
 #include "Render.h"
 #include "RenderRHI.h"
 #include "Shader.h"
+#include "Log.h"
+
+double previousTime = glfwGetTime();
+int frameCount = 0;
 
 int main()
 {
@@ -19,8 +23,24 @@ int main()
 
     while(!glfwWindowShouldClose(renderer.window))
     {
+        // Measure speed
+        double currentTime = glfwGetTime();
+        frameCount++;
+        // If a second has passed.
+        if ( currentTime - previousTime >= 1.0 )
+        {
+            // Display the frame count here any way you want.
+           
+            ULog("Frame Time", std::to_string(((currentTime - previousTime) / frameCount) * 1000));
+
+            frameCount = 0;
+            previousTime = currentTime;
+        }
+
         glfwPollEvents();
         renderer.RHI->DrawFrame();
+
+
     }
 
     renderer.Cleanup();

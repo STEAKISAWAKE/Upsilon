@@ -64,9 +64,12 @@ Render::Render(E_RHITypes RHIType) : Render() // Call glfwInit
 void Render::Initalize()
 {   
     glfwWindowHint(GLFW_CLIENT_API, GLFW_NO_API);
-    glfwWindowHint(GLFW_RESIZABLE, GLFW_FALSE);
+    glfwWindowHint(GLFW_RESIZABLE, GLFW_TRUE);
 
-    window = glfwCreateWindow(1920, 1080, "Upsilon", glfwGetPrimaryMonitor(), NULL);
+
+    window = glfwCreateWindow(1920, 1080, "Upsilon", NULL, NULL);
+
+    glfwSetWindowSizeLimits(window, 100, 100, -1, -1);
 
     RHI->Initalize();
 }
