@@ -9,7 +9,10 @@
 
 #include "vulkan/vulkan.h"
 
+#include "VulkanVertex.h"
 #include "Shader.h"
+
+class VulkanShader;
 
 struct QueueFamilyIndices
 {
@@ -39,6 +42,7 @@ public:
 
 // Variables
 public:
+
     VkInstance instance;
     VkDebugUtilsMessengerEXT debugMessenger;
     VkSurfaceKHR surface;
@@ -78,6 +82,14 @@ public:
 
     virtual void DrawFrame();
 
+    virtual Shader*     CreateShader() override;
+    virtual RenderMesh* CreateMesh() override;
+
+    // Helper Functions
+    uint32_t FindMemoryType(uint32_t typeFilter, VkMemoryPropertyFlags properties);
+
+    void CreateBuffer(VkDeviceSize size, VkBufferUsageFlags usage, VkMemoryPropertyFlags properties, VkBuffer& buffer, VkDeviceMemory& bufferMemory);
+    void CopyBuffer(VkBuffer srcBuffer, VkBuffer dstBuffer, VkDeviceSize size);
 
 // Variables
 private:
@@ -123,6 +135,8 @@ private:
 
     VkExtent2D ChooseSwapExtent(const VkSurfaceCapabilitiesKHR& capabilities);
 
+    void CreateGraphicsPipeline(VulkanShader* vert, VulkanShader* frag);
+
     // Vulkan Functions
     void CreateInstance();
     void SetupDebugMessenger();
@@ -132,41 +146,15 @@ private:
     void CreateSwapChain();
     void CreateImageViews();
     void CreateRenderPass();
-    void CreateGraphicsPipeline(VkShaderModule vert, VkShaderModule frag);
+    void CreateGraphicsPipelines();
     void CreateFrameBuffers();
     void CreateCommandPool();
     void CreateCommandBuffers();
     void CreateSyncObjects();
-
     void CleanupSwapChain();
     void RecreateSwapChain();
 
 };
 
-struct VulkanPipelineInfo
-{
-    VulkanPipelineInfo(VulkanRenderRHI* rhi, VkShaderModule vertShaderModule, VkShaderModule fragShaderModule);
-
-    VkPipelineShaderStageCreateInfo vertShaderStageInfo = {};
-    VkPipelineShaderStageCreateInfo fragShaderStageInfo = {};
-    VkPipelineVertexInputStateCreateInfo vertexInputInfo = {};
-    VkPipelineInputAssemblyStateCreateInfo inputAssembly = {};
-    VkViewport viewport = {};
-    VkRect2D scissor = {};
-    VkPipelineViewportStateCreateInfo viewportState = {};
-    VkPipelineRasterizationStateCreateInfo rasterizer = {};
-    VkPipelineMultisampleStateCreateInfo multisampling = {};
-    VkPipelineColorBlendAttachmentState colorBlendAttachment = {};
-    VkPipelineColorBlendStateCreateInfo colorBlending = {};
-
-    VkDynamicState dynamicStates[2] = 
-    {
-        VK_DYNAMIC_STATE_VIEWPORT,
-        VK_DYNAMIC_STATE_LINE_WIDTH
-    };
-
-    VkPipelineDynamicStateCreateInfo dynamicState = {};
-    
-};
 
 #endif // __UPSILON_RENDER_VULKANRENDERRHI_H__

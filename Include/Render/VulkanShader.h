@@ -18,11 +18,13 @@ public:
 public:
     VkShaderModule shaderModule;
 
+    VkPipelineVertexInputStateCreateInfo vertexInputInfo = {};
+
 
 // Methods
 public:
-    void Initalize();
-    void Cleanup();
+    void Initalize() override;
+    void Cleanup() override;
 
 };
 

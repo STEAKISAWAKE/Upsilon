@@ -7,6 +7,7 @@
 
 class Render;
 class Shader;
+class RenderMesh;
 
 class RenderRHI
 {
@@ -23,6 +24,7 @@ public:
     Render* render;
 
     std::vector<std::pair<Shader*, Shader*>> shaders;
+    std::vector<RenderMesh*> meshs;
 
 
 // Methods
@@ -33,7 +35,9 @@ public:
     virtual void DrawFrame() {};
 
     static std::vector<char> LoadShader(const std::string& filename);
-    virtual void CreateShader(Shader* newShader);
+
+    virtual Shader*     CreateShader();
+    virtual RenderMesh* CreateMesh();
 
 };
 

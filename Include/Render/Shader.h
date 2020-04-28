@@ -34,8 +34,8 @@ public:
 
 // Methods
 public:
-    void Initalize();
-    void Cleanup();
+    virtual void Initalize();
+    virtual void Cleanup();
 
 // Variables
 private:

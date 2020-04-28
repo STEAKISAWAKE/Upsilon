@@ -1,6 +1,7 @@
 # Create Library
 add_library(UpsilonMath STATIC
     Mesh.cpp
+    Vertex.cpp
 )
 
 # Library Includes

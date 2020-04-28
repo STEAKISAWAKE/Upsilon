@@ -4,6 +4,9 @@ add_library(UpsilonRender STATIC
     Render.cpp
     RenderRHI.cpp
     Shader.cpp
+    RenderMesh.cpp
+    VulkanVertex.cpp   
+    VulkanMesh.cpp
     VulkanShader.cpp
     VulkanRenderRHI.cpp
 )

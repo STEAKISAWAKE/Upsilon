@@ -49,7 +49,12 @@ std::vector<char> RenderRHI::LoadShader(const std::string& filename)
     return buffer;
 }
 
-void RenderRHI::CreateShader(Shader* newShader)
+Shader* RenderRHI::CreateShader()
 {
-        
+    return nullptr;
+}
+
+RenderMesh* RenderRHI::CreateMesh()
+{
+    return nullptr;
 }

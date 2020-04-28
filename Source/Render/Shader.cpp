@@ -42,3 +42,8 @@ void Shader::Initalize()
     // VulkanShader will do this
     // OpenGLShader will do this
 }
+
+void Shader::Cleanup()
+{
+    
+}
