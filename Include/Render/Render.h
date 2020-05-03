@@ -5,6 +5,8 @@
 
 #include <GLFW/glfw3.h>
 
+#include <glm/mat4x4.hpp>
+
 class RenderRHI;
 
 enum E_RHITypes
@@ -28,6 +30,9 @@ public:
 public:
 
     RenderRHI* RHI;
+
+
+    glm::mat4 camera;
     
     GLFWwindow* window;
 

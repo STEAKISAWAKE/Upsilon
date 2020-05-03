@@ -4,7 +4,7 @@
 
 #include "Shader.h"
 
-#include "vulkan/vulkan.h"
+#include <vulkan/vulkan.h>
 
 class VulkanShader : public Shader
 {

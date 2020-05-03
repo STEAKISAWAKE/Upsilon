@@ -7,12 +7,12 @@
 
 inline void ULog(std::string messageName, std::string message)
 {
-    std::cout << messageName << ": " << message << std::endl;
+    printf("%s: %s\n", messageName.c_str(), message.c_str());
 }
 
 inline void ULogError(std::string messageName, std::string message)
 {
-    std::cout << "\033[41m" << messageName << ": " << message << "\033[0m" << std::endl;
+    printf("%s: %s\n", messageName.c_str(), message.c_str());
 }
 
 #endif // __UPSILON_BASE_LOG_H__

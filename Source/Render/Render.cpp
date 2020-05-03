@@ -38,6 +38,8 @@ Render::Render()
     // Create Vulkan RHI as a default
     RHI = new VulkanRenderRHI();
     RHI->render = this;
+
+    camera = glm::mat4(1.0f);
 }
 
 
@@ -64,7 +66,6 @@ Render::Render(E_RHITypes RHIType) : Render() // Call glfwInit
 void Render::Initalize()
 {   
     glfwWindowHint(GLFW_CLIENT_API, GLFW_NO_API);
-    glfwWindowHint(GLFW_RESIZABLE, GLFW_TRUE);
 
 
     window = glfwCreateWindow(1920, 1080, "Upsilon", NULL, NULL);

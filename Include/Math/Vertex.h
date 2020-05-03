@@ -11,11 +11,11 @@ class Vertex
 // Constructors
 public:
     Vertex();
-    Vertex(glm::vec2 Pos, glm::vec3 Col);
+    Vertex(glm::vec3 Pos, glm::vec3 Col);
 
 // Variables
 public:
-    glm::vec2 Position;
+    glm::vec3 Position;
     glm::vec3 Color;
 
 

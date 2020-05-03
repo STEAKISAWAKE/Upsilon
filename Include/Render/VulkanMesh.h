@@ -17,26 +17,31 @@ public:
 
 // Variables
 public:
-
     VkBuffer vertexBuffer;
     VkDeviceMemory vertexBufferMemory;
     VkBuffer indexBuffer;
     VkDeviceMemory indexBufferMemory;
 
+    std::vector<VkBuffer> uniformBuffers;
+    std::vector<VkDeviceMemory> uniformAllocations;
+
+    std::vector<VkDescriptorSet> descriptorSets;
+
 // Methods
 public:
     void Initalize() override;
+    void CreateDescriptorSets();
     void Cleanup() override;
 
     void Draw(int commandBufferIndex) override;
 
-    VkBuffer GetVertexBuffer() {return vertexBuffer;}
-    VkBuffer GetIndexBuffer() {return indexBuffer;}
+    void CleanupUniformBuffers() override;
+    void InitalizeUniformBuffers() override;
+
 
 // Methods
 private:
-    void CreateVertexBuffer();
-    void CreateIndexBuffer();
+
 
 };
 

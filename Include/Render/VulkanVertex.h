@@ -6,7 +6,7 @@
 
 #include <array>
 
-#include "vulkan/vulkan.h"
+#include <vulkan/vulkan.h>
 
 class VulkanVertex : public Vertex
 {

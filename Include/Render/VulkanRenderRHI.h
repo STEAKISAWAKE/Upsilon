@@ -7,9 +7,11 @@
 
 #include <rttr/registration>
 
-#include "vulkan/vulkan.h"
+#include <vulkan/vulkan.h>
 
-#include "VulkanVertex.h"
+
+#include "RenderUniformBuffer.h"
+#include "VulkanMesh.h"
 #include "Shader.h"
 
 class VulkanShader;
@@ -28,6 +30,8 @@ struct SwapChainSupportDetails
     std::vector<VkSurfaceFormatKHR> formats;
     std::vector<VkPresentModeKHR> presentModes;
 };
+
+
 
 class VulkanRenderRHI 
     : public RenderRHI
@@ -61,6 +65,8 @@ public:
     std::vector<VkFramebuffer> swapChainFramebuffers;
 
     VkRenderPass renderPass;
+    VkDescriptorSetLayout descriptorSetLayout;
+    VkDescriptorPool descriptorPool;
     VkPipelineLayout pipelineLayout;
     std::vector<VkPipeline> graphicsPipelines;
 
@@ -77,19 +83,41 @@ public:
 
 // Methods
 public:
-    virtual void Initalize();
-    virtual void Cleanup();
+    
+    // Initalizers
+    void Initalize() override;
+    void InitalizeShaders() override;
+    void InitalizeMeshes() override;
+    void InitalizeMeshUniformBuffers() override;
 
-    virtual void DrawFrame();
+    // Cleanup
+    void Cleanup() override;
+    void CleanupShaders() override;
+    void CleanupMeshes() override;
+    void CleanupMeshUniformBuffers() override;
+        
 
-    virtual Shader*     CreateShader() override;
+    void DrawFrame() override;
+    void UpdateUniformBuffers(uint32_t currentImage) override;
+
+    virtual Shader*     CreateShader(int shaderIndex, ShaderType type) override;
     virtual RenderMesh* CreateMesh() override;
+    virtual Texture*    CreateTexture() override;
+
+
 
     // Helper Functions
     uint32_t FindMemoryType(uint32_t typeFilter, VkMemoryPropertyFlags properties);
 
     void CreateBuffer(VkDeviceSize size, VkBufferUsageFlags usage, VkMemoryPropertyFlags properties, VkBuffer& buffer, VkDeviceMemory& bufferMemory);
     void CopyBuffer(VkBuffer srcBuffer, VkBuffer dstBuffer, VkDeviceSize size);
+
+    void CreateVertexBuffer(VulkanMesh* mesh);
+    void CreateIndexBuffer(VulkanMesh* mesh);
+    void CreateUniformBuffers(VulkanMesh* mesh);
+
+    void CleanupUniformBuffers(VulkanMesh* mesh);
+    void CreateDescriptorSets(VulkanMesh* mesh);
 
 // Variables
 private:
@@ -135,7 +163,10 @@ private:
 
     VkExtent2D ChooseSwapExtent(const VkSurfaceCapabilitiesKHR& capabilities);
 
-    void CreateGraphicsPipeline(VulkanShader* vert, VulkanShader* frag);
+    void CreateGraphicsPipeline(GraphicsShaders shaders);
+
+    void BeginSingleTimeCommands();
+    void EndSingleTimeCommands();
 
     // Vulkan Functions
     void CreateInstance();
@@ -143,18 +174,25 @@ private:
     void CreateSurface();
     void PickPhysicalDevice();
     void CreateLogicalDevice();
+    void CreateAllocator();
     void CreateSwapChain();
     void CreateImageViews();
     void CreateRenderPass();
+    void CreateDescriptorSetLayout();
     void CreateGraphicsPipelines();
+    void CreateTemporaryCommandBuffer();
     void CreateFrameBuffers();
     void CreateCommandPool();
+    void CreateDescriptorPool();
+
     void CreateCommandBuffers();
     void CreateSyncObjects();
     void CleanupSwapChain();
     void RecreateSwapChain();
 
 };
+
+
 
 
 #endif // __UPSILON_RENDER_VULKANRENDERRHI_H__

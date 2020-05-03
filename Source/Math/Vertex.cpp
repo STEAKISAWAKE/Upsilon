@@ -6,7 +6,7 @@ Vertex::Vertex()
 
 }
 
-Vertex::Vertex(glm::vec2 Pos, glm::vec3 Col)
+Vertex::Vertex(glm::vec3 Pos, glm::vec3 Col)
 {
     Position = Pos;
     Color = Col;

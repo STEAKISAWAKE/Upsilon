@@ -11,7 +11,7 @@ RenderMesh::RenderMesh()
 RenderMesh::RenderMesh(RenderRHI* renderRHI)
 {
     rhi = renderRHI;
-    rhi->meshs.push_back(this);
+    rhi->meshes.push_back(this);
 }
 
 // Methods

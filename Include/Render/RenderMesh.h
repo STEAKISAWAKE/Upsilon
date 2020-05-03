@@ -3,6 +3,8 @@
 
 #include "Mesh.h"
 
+#include "RenderUniformBuffer.h"
+
 class RenderRHI;
 
 class RenderMesh : public Mesh
@@ -18,6 +20,8 @@ public:
 public:
     RenderRHI* rhi;
 
+    RenderUniformBuffer uniformBuffer;
+
 
 // Methods
 public:
@@ -26,6 +30,8 @@ public:
     virtual void Initalize();
     virtual void Cleanup();
 
+    virtual void InitalizeUniformBuffers() {};
+    virtual void CleanupUniformBuffers() {};
 
 };
 

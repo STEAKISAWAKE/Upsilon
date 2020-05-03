@@ -2,13 +2,23 @@
 # Create Library
 add_library(UpsilonRender STATIC
     Render.cpp
+
     RenderRHI.cpp
-    Shader.cpp
-    RenderMesh.cpp
-    VulkanVertex.cpp   
-    VulkanMesh.cpp
-    VulkanShader.cpp
     VulkanRenderRHI.cpp
+
+    Shader.cpp
+    VulkanShader.cpp
+
+    Texture.cpp
+    VulkanTexture.cpp
+
+    RenderMesh.cpp
+    VulkanMesh.cpp
+
+    VulkanVertex.cpp   
+
+
+
 )
 
 # Include Directories
@@ -25,8 +35,10 @@ find_package(OpenGL REQUIRED COMPONENTS OpenGL)
 find_package(Vulkan REQUIRED)
 
 # Include 3rd Party Libraries
-target_include_directories(UpsilonRender PUBLIC OPENGL_INCLUDE_DIR)
-target_include_directories(UpsilonRender PUBLIC Vulkan_INCLUDE_DIRS)
+target_include_directories(UpsilonRender PUBLIC ${OPENGL_INCLUDE_DIR})
+target_include_directories(UpsilonRender PUBLIC ${Vulkan_INCLUDE_DIRS})
+
+message(${Vulkan_INCLUDE_DIRS})
 
 # Link 3rd Party Libraries
 target_link_libraries(UpsilonRender ${OPENGL_LIBRARIES})
