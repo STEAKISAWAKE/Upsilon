@@ -11,8 +11,8 @@ class RenderRHI;
 
 enum E_RHITypes
 {
-    VulkanRHI,
-    OpenGLRHI
+    E_VulkanRHI,
+    E_OpenGLRHI
 };
 
 class Render
@@ -20,28 +20,21 @@ class Render
 
     RTTR_ENABLE()
 
-// Constructors
 public:
 
     Render();
     Render(E_RHITypes RHIType);
 
-// Variables
 public:
 
     RenderRHI* RHI;
-
-
-    glm::mat4 camera;
-    
     GLFWwindow* window;
 
-// Methods
 public:
     void Initalize();
     void Cleanup();
 
-    void SwitchRHITo(E_RHITypes RHIType);
+    void SwitchRHITo(E_RHITypes RHIType); // Runtime RHI switching.
 
 
 };

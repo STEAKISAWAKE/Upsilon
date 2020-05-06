@@ -7,6 +7,7 @@
 #include "json.h"
 
 class Game;
+class Actor;
 
 class World
 {
@@ -21,8 +22,13 @@ public:
 public:
     Game* game;
 
+    std::map<unsigned int, Actor*> actors;
+
 // Methods
 public:
+
+    virtual void Update();
+
     void LoadWorld(nlohmann::json worldJson);
 
 

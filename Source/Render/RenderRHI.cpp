@@ -62,19 +62,6 @@ Texture* RenderRHI::CreateTexture()
     return nullptr;
 }
 
-int RenderRHI::GetLatestShaderIndex()
-{
-    bool filled = false;;
-
-    if (shaders.size() != 0)
-        filled = shaders[shaders.size() - 1].Filled();
-
-    if (shaders.size() == 0 || filled)
-        shaders.resize(shaders.size() + 1);
-
-    return shaders.size() - 1;
-}
-
 // Structures
 
 void GraphicsShaders::Initalize()

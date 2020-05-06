@@ -23,40 +23,26 @@ class RenderRHI
 
 RTTR_ENABLE()
 
-// Constructors
 public:
 
     RenderRHI();
 
-// Variables
 public:
     Render* render;
 
-    std::vector<GraphicsShaders> shaders;
-    std::vector<RenderMesh*> meshes;
-    std::vector<Texture*> textures;
-
-
-// Methods
 public:
 
     // Initalize
     virtual void Initalize() {};
-    virtual void InitalizeShaders() {};
-    virtual void InitalizeMeshes() {};
-    virtual void InitalizeMeshUniformBuffers() {};
+    virtual void ReInitalize() {};
 
     // Draw
     virtual void DrawFrame() {};
-    virtual void UpdateUniformBuffers(uint32_t info) {};
-    virtual void DrawMeshes() {};
     
     // Cleanup
     virtual void Cleanup() {};
-    virtual void CleanupShaders() {};
-    virtual void CleanupMeshes() {};
-    virtual void CleanupMeshUniformBuffers() {};
 
+public:
     // Create Render Specific Objects
     virtual Shader*     CreateShader(int shaderIndex, ShaderType type);
     virtual RenderMesh* CreateMesh();
@@ -65,10 +51,9 @@ public:
     // Utils
     static std::vector<char> LoadShader(const std::string& filename);
 
-    virtual int GetLatestShaderIndex();
-
 };
 
+/* A handle for the graphics pipeline shaders */
 class GraphicsShaders
 {
 

@@ -1,4 +1,3 @@
-
 #ifndef __UPSILON_RENDER_SHADER_H__
 #define __UPSILON_RENDER_SHADER_H__
 
@@ -8,13 +7,6 @@
 #include <rttr/registration>
 
 class RenderRHI;
-
-/* CLASS INFO
-
-Shader's should be created before the Render RHI is initalized.
-
-*/
-
 
 class Shader
 {
@@ -55,4 +47,3 @@ struct ShaderVertFrag
 };
 
 #endif // __UPSILON_RENDER_SHADER_H__
-

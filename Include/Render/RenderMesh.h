@@ -3,6 +3,8 @@
 
 #include "Mesh.h"
 
+#include <string>
+
 #include "RenderUniformBuffer.h"
 
 class RenderRHI;
@@ -32,6 +34,8 @@ public:
 
     virtual void InitalizeUniformBuffers() {};
     virtual void CleanupUniformBuffers() {};
+
+    virtual bool LoadMesh(std::string meshDir);
 
 };
 

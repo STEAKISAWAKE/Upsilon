@@ -1,30 +1,28 @@
 
 # Create Library
 add_library(UpsilonRender STATIC
-    Render.cpp
+    glad.c
+
+
 
     RenderRHI.cpp
-    VulkanRenderRHI.cpp
+    Vulkan/VulkanRHI.cpp
+    Vulkan/VulkanInstance.cpp
+    Vulkan/VulkanDebugCallback.cpp
+    Vulkan/VulkanPhysicalDevice.cpp
+    Vulkan/VulkanDevice.cpp
 
     Shader.cpp
-    VulkanShader.cpp
-
     Texture.cpp
-    VulkanTexture.cpp
-
     RenderMesh.cpp
-    VulkanMesh.cpp
 
-    VulkanVertex.cpp   
-
-
-
+    Render.cpp
 )
 
 # Include Directories
 target_include_directories(UpsilonRender PUBLIC "${INCLUDE_DIR}/Base")
 target_include_directories(UpsilonRender PUBLIC "${INCLUDE_DIR}/Math")
-target_include_directories(UpsilonRender PUBLIC "${INCLUDE_DIR}/Render")
+target_include_directories(UpsilonRender PUBLIC "${INCLUDE_DIR}/Render" "${INCLUDE_DIR}/Render/Vulkan")
 
 # Link Libraries
 target_link_libraries(UpsilonRender UpsilonBase)
@@ -44,3 +42,4 @@ message(${Vulkan_INCLUDE_DIRS})
 target_link_libraries(UpsilonRender ${OPENGL_LIBRARIES})
 target_link_libraries(UpsilonRender ${Vulkan_LIBRARY})
 target_link_libraries(UpsilonRender glfw)
+target_link_libraries(UpsilonRender assimp)

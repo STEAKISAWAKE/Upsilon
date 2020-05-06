@@ -1,9 +1,12 @@
 #include "Render.h"
 
 #include "Shader.h"
-#include "VulkanRenderRHI.h"
+
+#include "VulkanRHI.h"
+
 #include "Log.h"
 
+VulkanRHI test;
 
 RTTR_REGISTRATION
 {
@@ -11,8 +14,8 @@ RTTR_REGISTRATION
     
     registration::enumeration<E_RHITypes>("E_RHITypes")
         (
-            value("VulkanRHI", E_RHITypes::VulkanRHI),
-            value("OpenGLRHI", E_RHITypes::OpenGLRHI)
+            value("VulkanRHI", E_RHITypes::E_VulkanRHI),
+            value("OpenGLRHI", E_RHITypes::E_OpenGLRHI)
         );
 
     registration::class_<Render>("Render")
@@ -36,10 +39,9 @@ Render::Render()
     }
 
     // Create Vulkan RHI as a default
-    RHI = new VulkanRenderRHI();
+    RHI = new VulkanRHI();
     RHI->render = this;
 
-    camera = glm::mat4(1.0f);
 }
 
 
@@ -50,12 +52,12 @@ Render::Render(E_RHITypes RHIType) : Render() // Call glfwInit
 
     switch(RHIType)
     {
-        case VulkanRHI:
-            RHI = new VulkanRenderRHI();
+        case E_VulkanRHI:
+            RHI = new VulkanRHI();
             break;
         
-        case OpenGLRHI:
-            // RHI = new OpenGLRenderRHI();/* code */
+        case E_OpenGLRHI:
+            // RHI = new OpenGLRenderRHI();
             break;
     }
 
@@ -66,7 +68,7 @@ Render::Render(E_RHITypes RHIType) : Render() // Call glfwInit
 void Render::Initalize()
 {   
     glfwWindowHint(GLFW_CLIENT_API, GLFW_NO_API);
-
+    glfwWindowHint(GLFW_RESIZABLE, GLFW_FALSE);
 
     window = glfwCreateWindow(1920, 1080, "Upsilon", NULL, NULL);
 
