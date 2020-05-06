@@ -7,3 +7,9 @@
 [submodule "Libraries/glfw/glfw"]
 	path = Libraries/glfw/glfw
 	url = https://github.com/glfw/glfw
+[submodule "Libraries/assimp/assimp"]
+	path = Libraries/assimp/assimp
+	url = https://github.com/assimp/assimp
+[submodule "Libraries/reactphysics3d/reactphysics3d"]
+	path = Libraries/reactphysics3d/reactphysics3d
+	url = https://github.com/DanielChappuis/reactphysics3d
