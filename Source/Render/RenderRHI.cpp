@@ -4,6 +4,8 @@
 
 #include <rttr/registration>
 
+#include "Render.h"
+
 #include "Shader.h"
 #include "Log.h"
 
@@ -13,6 +15,7 @@ RTTR_REGISTRATION
 
     registration::class_<RenderRHI>("RenderRHI")
         .constructor<>()
+        .constructor<Render*>()
         
         .method("Initalize", &RenderRHI::Initalize)
         .method("Cleanup", &RenderRHI::Cleanup)
@@ -20,10 +23,19 @@ RTTR_REGISTRATION
         .method("LoadShader", &RenderRHI::LoadShader)
         .method("CreateShader", &RenderRHI::CreateShader);
     ; 
-
 }
 
 RenderRHI::RenderRHI()
+{
+
+}
+
+RenderRHI::RenderRHI(Render* renderer)
+{
+    Renderer = renderer;
+}
+
+RenderRHI::~RenderRHI()
 {
     
 }
@@ -47,7 +59,12 @@ std::vector<char> RenderRHI::LoadShader(const std::string& filename)
     return buffer;
 }
 
-Shader* RenderRHI::CreateShader(int shaderIndex, ShaderType type)
+ShaderPool* RenderRHI::CreateShaderPool()
+{
+    return nullptr;
+}
+
+Shader* RenderRHI::CreateShader(int shaderIndex, ShaderType type, const std::vector<char>& code)
 {
     return nullptr;
 }
@@ -64,19 +81,19 @@ Texture* RenderRHI::CreateTexture()
 
 // Structures
 
-void GraphicsShaders::Initalize()
+void ShaderPool::Initalize()
 {
     vertexShader->Initalize();
     fragmentShader->Initalize();
 }
 
-void GraphicsShaders::Cleanup()
+void ShaderPool::Cleanup(bool everything)
 {
     vertexShader->Cleanup();
     fragmentShader->Cleanup();
 }
 
-bool GraphicsShaders::Filled()
+bool ShaderPool::Filled()
 {
     if (vertexShader && fragmentShader)
     {

@@ -22,7 +22,7 @@ public:
 public:
     RenderRHI* rhi;
 
-    std::vector<char> spirvByteCode;
+    std::vector<char> Code;
 
 // Methods
 public:

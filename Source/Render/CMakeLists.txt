@@ -3,7 +3,7 @@
 add_library(UpsilonRender STATIC
     glad.c
 
-
+    RenderWindow.cpp
 
     RenderRHI.cpp
     Vulkan/VulkanRHI.cpp
@@ -11,6 +11,16 @@ add_library(UpsilonRender STATIC
     Vulkan/VulkanDebugCallback.cpp
     Vulkan/VulkanPhysicalDevice.cpp
     Vulkan/VulkanDevice.cpp
+    Vulkan/VulkanSurface.cpp
+    Vulkan/VulkanSwapChain.cpp
+    Vulkan/VulkanImageViews.cpp
+    Vulkan/VulkanShader.cpp
+    Vulkan/VulkanRenderPass.cpp
+    Vulkan/VulkanGraphicsPipeline.cpp
+    Vulkan/VulkanFramebuffers.cpp
+    Vulkan/VulkanCommandPool.cpp
+    Vulkan/VulkanCommandBuffers.cpp
+    Vulkan/VulkanSemaphores.cpp
 
     Shader.cpp
     Texture.cpp

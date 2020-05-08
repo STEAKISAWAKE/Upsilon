@@ -30,7 +30,7 @@ Shader::Shader()
 Shader::Shader(RenderRHI* renderRHI, std::vector<char> byteCode)
 {
     rhi = renderRHI;
-    spirvByteCode = byteCode;
+    Code = byteCode;
 
     Initalize();
 

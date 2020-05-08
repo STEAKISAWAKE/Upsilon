@@ -7,6 +7,8 @@
 
 #include <glm/mat4x4.hpp>
 
+#include "RenderWindow.h"
+
 class RenderRHI;
 
 enum E_RHITypes
@@ -28,7 +30,7 @@ public:
 public:
 
     RenderRHI* RHI;
-    GLFWwindow* window;
+    RenderWindow Window;
 
 public:
     void Initalize();

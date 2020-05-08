@@ -15,6 +15,8 @@ public:
 public:
     VkDevice device;
     VkQueue graphicsQueue;
+    VkQueue presentQueue;
+    static const int MAX_FRAMES_IN_FLIGHT = 2;
 
     VulkanPhysicalDevice* PhysicalDevice;
 

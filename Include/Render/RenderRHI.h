@@ -10,12 +10,14 @@ class Shader;
 class Texture;
 class RenderMesh;
 
-class GraphicsShaders;
+class ShaderPool;
 
 enum ShaderType
 {
+    E_ShaderTypeMin,
     E_VertexShader,
-    E_FragmentShader
+    E_FragmentShader,
+    E_ShaderTypeMax
 };
 
 class RenderRHI
@@ -24,50 +26,53 @@ class RenderRHI
 RTTR_ENABLE()
 
 public:
-
     RenderRHI();
+    RenderRHI(Render* render);
+    ~RenderRHI();
 
 public:
-    Render* render;
+    Render* Renderer;
+
+    size_t currentFrame = 0;
 
 public:
-
-    // Initalize
     virtual void Initalize() {};
-    virtual void ReInitalize() {};
-
-    // Draw
-    virtual void DrawFrame() {};
-    
-    // Cleanup
     virtual void Cleanup() {};
 
-public:
-    // Create Render Specific Objects
-    virtual Shader*     CreateShader(int shaderIndex, ShaderType type);
-    virtual RenderMesh* CreateMesh();
-    virtual Texture* CreateTexture();
+    virtual void RecreateSwapChain() {};
 
-    // Utils
+    virtual void DrawFrame() {};
+
+    virtual void FramebufferResized() {};
+
+public:
+    virtual ShaderPool* CreateShaderPool();
+    virtual Shader*     CreateShader(int shaderIndex, ShaderType type, const std::vector<char>& code);
+    virtual RenderMesh* CreateMesh();
+    virtual Texture*    CreateTexture();
+
     static std::vector<char> LoadShader(const std::string& filename);
+
+public:
+    std::vector<ShaderPool*> ShaderPools;
 
 };
 
 /* A handle for the graphics pipeline shaders */
-class GraphicsShaders
+class ShaderPool
 {
 
 public:
-    GraphicsShaders() {};
+    ShaderPool() {};
 
 public:
     Shader* vertexShader = nullptr;
     Shader* fragmentShader = nullptr;
 
-    void Initalize();
-    void Cleanup();
+    virtual void Initalize();
+    virtual void Cleanup(bool everything);
 
-    bool Filled();
+    virtual bool Filled();
 };
 
 #endif // __UPSILON_RENDER_RENDERRHI_H__

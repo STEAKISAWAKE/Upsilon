@@ -1,12 +1,11 @@
 #include "Render.h"
 
+#include "RenderWindow.h"
 #include "Shader.h"
 
 #include "VulkanRHI.h"
 
 #include "Log.h"
-
-VulkanRHI test;
 
 RTTR_REGISTRATION
 {
@@ -39,8 +38,7 @@ Render::Render()
     }
 
     // Create Vulkan RHI as a default
-    RHI = new VulkanRHI();
-    RHI->render = this;
+    RHI = new VulkanRHI(this);
 
 }
 
@@ -53,7 +51,7 @@ Render::Render(E_RHITypes RHIType) : Render() // Call glfwInit
     switch(RHIType)
     {
         case E_VulkanRHI:
-            RHI = new VulkanRHI();
+            RHI = new VulkanRHI(this);
             break;
         
         case E_OpenGLRHI:
@@ -61,18 +59,14 @@ Render::Render(E_RHITypes RHIType) : Render() // Call glfwInit
             break;
     }
 
-    RHI->render = this;
 }
 
 
 void Render::Initalize()
 {   
-    glfwWindowHint(GLFW_CLIENT_API, GLFW_NO_API);
-    glfwWindowHint(GLFW_RESIZABLE, GLFW_FALSE);
 
-    window = glfwCreateWindow(1920, 1080, "Upsilon", NULL, NULL);
-
-    glfwSetWindowSizeLimits(window, 100, 100, -1, -1);
+    Window.CreateWindow("Upsilon");
+    glfwSetWindowUserPointer(Window.glfwWin, RHI);
 
     RHI->Initalize();
 }
@@ -82,7 +76,7 @@ void Render::Cleanup()
 {
     RHI->Cleanup();
 
-    glfwDestroyWindow(window);
+    Window.CloseWindow();
 }
 
 
