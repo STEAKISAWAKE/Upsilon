@@ -2,53 +2,125 @@
 
 #include "VulkanPhysicalDevice.h"
 #include "VulkanDevice.h"
+#include "VulkanCommandPool.h"
 #include "VulkanMesh.h"
 
 #include "Log.h"
 
-VulkanBuffers::VulkanBuffers(VulkanPhysicalDevice* physicalDevice, VulkanDevice* device)
+VulkanBuffers::VulkanBuffers(VulkanPhysicalDevice* physicalDevice, VulkanDevice* device, VulkanCommandPool* commandPool)
 {
     PhysicalDevice = physicalDevice;
     Device = device;
+    CommandPool = commandPool;
+}
+
+void VulkanBuffers::CreateBuffer(VkDeviceSize size, VkBufferUsageFlags usage, VkMemoryPropertyFlags properties, VkBuffer& buffer, VkDeviceMemory& bufferMemory)
+{
+    VkBufferCreateInfo bufferInfo{};
+    bufferInfo.sType = VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO;
+    bufferInfo.size = size;
+    bufferInfo.usage = usage;
+    bufferInfo.sharingMode = VK_SHARING_MODE_EXCLUSIVE;
+
+    if (vkCreateBuffer(Device->device, &bufferInfo, nullptr, &buffer) != VK_SUCCESS) {
+        throw std::runtime_error("failed to create buffer!");
+    }
+
+    VkMemoryRequirements memRequirements;
+    vkGetBufferMemoryRequirements(Device->device, buffer, &memRequirements);
+
+    VkMemoryAllocateInfo allocInfo{};
+    allocInfo.sType = VK_STRUCTURE_TYPE_MEMORY_ALLOCATE_INFO;
+    allocInfo.allocationSize = memRequirements.size;
+    allocInfo.memoryTypeIndex = FindMemoryType(memRequirements.memoryTypeBits, properties);
+
+    if (vkAllocateMemory(Device->device, &allocInfo, nullptr, &bufferMemory) != VK_SUCCESS) {
+        throw std::runtime_error("failed to allocate buffer memory!");
+    }
+
+    vkBindBufferMemory(Device->device, buffer, bufferMemory, 0);
+}
+
+void VulkanBuffers::CopyBuffer(VkBuffer srcBuffer, VkBuffer dstBuffer, VkDeviceSize size)
+{
+     VkCommandBufferAllocateInfo allocInfo{};
+    allocInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO;
+    allocInfo.level = VK_COMMAND_BUFFER_LEVEL_PRIMARY;
+    allocInfo.commandPool = CommandPool->commandPool;
+    allocInfo.commandBufferCount = 1;
+
+    VkCommandBuffer commandBuffer;
+    vkAllocateCommandBuffers(Device->device, &allocInfo, &commandBuffer);
+
+    VkCommandBufferBeginInfo beginInfo{};
+    beginInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
+    beginInfo.flags = VK_COMMAND_BUFFER_USAGE_ONE_TIME_SUBMIT_BIT;
+
+    vkBeginCommandBuffer(commandBuffer, &beginInfo);
+
+    VkBufferCopy copyRegion{};
+    copyRegion.size = size;
+    vkCmdCopyBuffer(commandBuffer, srcBuffer, dstBuffer, 1, &copyRegion);
+
+    vkEndCommandBuffer(commandBuffer);
+
+    VkSubmitInfo submitInfo{};
+    submitInfo.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO;
+    submitInfo.commandBufferCount = 1;
+    submitInfo.pCommandBuffers = &commandBuffer;
+
+    vkQueueSubmit(Device->graphicsQueue, 1, &submitInfo, VK_NULL_HANDLE);
+    vkQueueWaitIdle(Device->graphicsQueue);
+
+    vkFreeCommandBuffers(Device->device, CommandPool->commandPool, 1, &commandBuffer);
 }
 
 void VulkanBuffers::CreateMeshBuffers(VulkanMesh* mesh)
 {
+    CreateIndexBuffer(mesh);
     CreateVertexBuffer(mesh);
 }
 
 void VulkanBuffers::CreateVertexBuffer(VulkanMesh* mesh)
 {
-    VkBufferCreateInfo bufferInfo = {};
-    bufferInfo.sType = VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO;
-    bufferInfo.size = sizeof(mesh->Vertices[0]) * mesh->Vertices.size();
-    bufferInfo.usage = VK_BUFFER_USAGE_VERTEX_BUFFER_BIT;
-    bufferInfo.sharingMode = VK_SHARING_MODE_EXCLUSIVE;
+    VkDeviceSize bufferSize = sizeof(mesh->Vertices[0]) * mesh->Vertices.size();
 
-    if(vkCreateBuffer(Device->device, &bufferInfo, nullptr, &mesh->vertexBuffer) != VK_SUCCESS)
-    {
-        ULogError("Vulkan Buffers", "Could not create a vertex buffer!");
-    }
-
-    VkMemoryRequirements memRequirements;
-    vkGetBufferMemoryRequirements(Device->device, mesh->vertexBuffer, &memRequirements);
-
-    VkMemoryAllocateInfo allocInfo = {};
-    allocInfo.sType = VK_STRUCTURE_TYPE_MEMORY_ALLOCATE_INFO;
-    allocInfo.allocationSize = memRequirements.size;
-    allocInfo.memoryTypeIndex = FindMemoryType(memRequirements.memoryTypeBits, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT);
-
-    if(vkAllocateMemory(Device->device, &allocInfo, nullptr, &mesh->vertexBufferMemory) != VK_SUCCESS)
-    {
-        ULogError("Vulkan Buffers", "Could not allocate vertex buffer memory!");
-    }
-
-    vkBindBufferMemory(Device->device, mesh->vertexBuffer, mesh->vertexBufferMemory, 0);
+    VkBuffer stagingBuffer;
+    VkDeviceMemory stagingBufferMemory;
+    CreateBuffer(bufferSize, VK_BUFFER_USAGE_TRANSFER_SRC_BIT, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT, stagingBuffer, stagingBufferMemory);
 
     void* data;
-    vkMapMemory(Device->device, mesh->vertexBufferMemory, 0, bufferInfo.size, 0, &data);
-        memcpy(data, mesh->Vertices.data(), (size_t) bufferInfo.size);
-    vkUnmapMemory(Device->device, mesh->vertexBufferMemory);
+    vkMapMemory(Device->device, stagingBufferMemory, 0, bufferSize, 0, &data);
+        memcpy(data, mesh->Vertices.data(), (size_t) bufferSize);
+    vkUnmapMemory(Device->device, stagingBufferMemory);
+
+    CreateBuffer(bufferSize, VK_BUFFER_USAGE_TRANSFER_DST_BIT | VK_BUFFER_USAGE_VERTEX_BUFFER_BIT, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT, mesh->vertexBuffer, mesh->vertexBufferMemory);
+
+    CopyBuffer(stagingBuffer, mesh->vertexBuffer, bufferSize);
+
+    vkDestroyBuffer(Device->device, stagingBuffer, nullptr);
+    vkFreeMemory(Device->device, stagingBufferMemory, nullptr);
+}
+
+void VulkanBuffers::CreateIndexBuffer(VulkanMesh* mesh)
+{
+    VkDeviceSize bufferSize = sizeof(mesh->Indices[0]) * mesh->Indices.size();
+
+    VkBuffer stagingBuffer;
+    VkDeviceMemory stagingBufferMemory;
+    CreateBuffer(bufferSize, VK_BUFFER_USAGE_TRANSFER_SRC_BIT, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT, stagingBuffer, stagingBufferMemory);
+
+    void* data;
+    vkMapMemory(Device->device, stagingBufferMemory, 0, bufferSize, 0, &data);
+        memcpy(data, mesh->Indices.data(), (size_t) bufferSize);
+    vkUnmapMemory(Device->device, stagingBufferMemory);
+
+    CreateBuffer(bufferSize, VK_BUFFER_USAGE_TRANSFER_DST_BIT | VK_BUFFER_USAGE_INDEX_BUFFER_BIT, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT, mesh->indexBuffer, mesh->indexBufferMemory);
+
+    CopyBuffer(stagingBuffer, mesh->indexBuffer, bufferSize);
+
+    vkDestroyBuffer(Device->device, stagingBuffer, nullptr);
+    vkFreeMemory(Device->device, stagingBufferMemory, nullptr);
 
 }
 

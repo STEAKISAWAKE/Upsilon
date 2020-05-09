@@ -11,11 +11,11 @@ class Mesh
 
 public:
     Mesh();
-    Mesh(std::vector<Vertex2D> Verts, std::vector<unsigned int> Index);
+    Mesh(std::vector<Vertex2D> Verts, std::vector<uint32_t> Index);
 
 public:
     std::vector<Vertex2D> Vertices;
-    std::vector<unsigned int> Indices;
+    std::vector<uint32_t> Indices;
 };
 
 #endif // __UPSILON_MATH_MESH_H__

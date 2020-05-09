@@ -6,22 +6,28 @@
 
 class VulkanPhysicalDevice;
 class VulkanDevice;
+class VulkanCommandPool;
 class VulkanMesh;
 
 class VulkanBuffers
 {
 
 public:
-    VulkanBuffers(VulkanPhysicalDevice* physicalDevice, VulkanDevice* device);
+    VulkanBuffers(VulkanPhysicalDevice* physicalDevice, VulkanDevice* device, VulkanCommandPool* commandPook);
 
 public:
     VulkanPhysicalDevice* PhysicalDevice;
     VulkanDevice* Device;
+    VulkanCommandPool* CommandPool;
 
 public:
-    void CreateMeshBuffers(VulkanMesh* mesh); // TODO
+    void CreateBuffer(VkDeviceSize size, VkBufferUsageFlags usage, VkMemoryPropertyFlags properties, VkBuffer& buffer, VkDeviceMemory& bufferMemory);
+    void CopyBuffer(VkBuffer srcBuffer, VkBuffer dstBuffer, VkDeviceSize size);
+
+    void CreateMeshBuffers(VulkanMesh* mesh);
     void CreateVertexBuffer(VulkanMesh* mesh);
-    
+    void CreateIndexBuffer(VulkanMesh* mesh);
+
     uint32_t FindMemoryType(uint32_t typeFilter, VkMemoryPropertyFlags properties);
 
 };

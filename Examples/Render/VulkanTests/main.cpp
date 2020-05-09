@@ -15,12 +15,19 @@ int main()
     RenderMesh* mesh = render.RHI->CreateMesh();
 
     const std::vector<Vertex2D> vertices = {
-        {{0.0f, -0.5f}, {1.0f, 0.0f, 0.0f}},
-        {{0.5f, 0.5f}, {0.0f, 1.0f, 0.0f}},
-        {{-0.5f, 0.5f}, {0.0f, 0.0f, 1.0f}}
+        {{-0.5f, -0.5f}, {1.0f, 0.0f, 0.0f}},
+        {{0.5f, -0.5f}, {0.0f, 1.0f, 0.0f}},
+        {{0.5f, 0.5f}, {0.0f, 0.0f, 1.0f}},
+        {{-0.5f, 0.5f}, {1.0f, 1.0f, 1.0f}}
+    };
+
+    const std::vector<uint32_t> indices = 
+    {
+        0, 1, 2, 2, 3, 0
     };
 
     mesh->Vertices = vertices;
+    mesh->Indices = indices;
 
     render.Initalize();
 

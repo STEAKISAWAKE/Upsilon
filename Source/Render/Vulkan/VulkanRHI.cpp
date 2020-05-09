@@ -46,7 +46,7 @@ VulkanRHI::VulkanRHI(Render* renderer)
 
     CommandBuffers = new VulkanCommandBuffers(this);
     Semaphores = new VulkanSemaphores(Device, SwapChain);
-    Buffers = new VulkanBuffers(PhysicalDevice, Device);
+    Buffers = new VulkanBuffers(PhysicalDevice, Device, CommandPool);
 }
 
 VulkanRHI::~VulkanRHI()
