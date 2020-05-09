@@ -1,24 +1,17 @@
 #include "RenderMesh.h"
 
-// Include AssImp
-#include <assimp/Importer.hpp>      // C++ importer interface
-#include <assimp/scene.h>           // Output data structure
-#include <assimp/postprocess.h>     // Post processing flags
+#include <assimp/Importer.hpp>
+#include <assimp/scene.h>
+#include <assimp/postprocess.h>
 
 #include "RenderRHI.h"
 
-// Constructors
-RenderMesh::RenderMesh()
+RenderMesh::RenderMesh(RenderRHI* rhi)
 {
-
+	RHI = rhi;
+	RHI->Meshes.push_back(this);
 }
 
-RenderMesh::RenderMesh(RenderRHI* renderRHI)
-{
-    rhi = renderRHI;
-}
-
-// Methods
 void RenderMesh::Draw(int info)
 {
 
@@ -32,11 +25,6 @@ void RenderMesh::Initalize()
 void RenderMesh::Cleanup()
 {
 	
-}
-
-void LoadMesh(std::string meshDir)
-{
-    
 }
 
 bool RenderMesh::LoadMesh(std::string path)
@@ -62,7 +50,7 @@ bool RenderMesh::LoadMesh(std::string path)
 			 n = mesh->mNormals[i];
 
 		// Create verts
-		Vertices.push_back(Vertex(glm::vec3(pos.x, pos.y, pos.z), { 0.5f, 0.5f, 0.5f }, { n.x, n.y, n.z }));
+		//Vertices.push_back(Vertex3D(glm::vec3(pos.x, pos.y, pos.z), { 0.5f, 0.5f, 0.5f } /*, { n.x, n.y, n.z } */));
 	}
 
 	//// Fill vertices texture coordinates

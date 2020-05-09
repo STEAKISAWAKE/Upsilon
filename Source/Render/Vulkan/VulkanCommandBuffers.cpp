@@ -7,29 +7,26 @@
 #include "Vulkan/VulkanRenderPass.h"
 #include "Vulkan/VulkanGraphicsPipeline.h"
 #include "Vulkan/VulkanCommandPool.h"
+#include "Vulkan/VulkanMesh.h"
 
 #include "Log.h"
 
-VulkanCommandBuffers::VulkanCommandBuffers(VulkanDevice* device, VulkanSwapChain* swapChain,  VulkanRenderPass* renderPass, VulkanShaderPool* shaders, VulkanCommandPool* commandPool)
+VulkanCommandBuffers::VulkanCommandBuffers(VulkanRHI* rhi)
 {
-    Device = device;
-    SwapChain = swapChain;
-    RenderPass = renderPass;
-    Shaders = shaders;
-    CommandPool = commandPool;
+    RHI = rhi;
 }
 
 void VulkanCommandBuffers::Initalize()
 {
-    commandBuffers.resize(SwapChain->swapChainFramebuffers.size());
+    commandBuffers.resize(RHI->SwapChain->swapChainFramebuffers.size());
 
     VkCommandBufferAllocateInfo allocInfo = {};
     allocInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO;
-    allocInfo.commandPool = CommandPool->commandPool;
+    allocInfo.commandPool = RHI->CommandPool->commandPool;
     allocInfo.level = VK_COMMAND_BUFFER_LEVEL_PRIMARY;
     allocInfo.commandBufferCount = (uint32_t) commandBuffers.size();
 
-    if(vkAllocateCommandBuffers(Device->device, &allocInfo, commandBuffers.data()) != VK_SUCCESS)
+    if(vkAllocateCommandBuffers(RHI->Device->device, &allocInfo, commandBuffers.data()) != VK_SUCCESS)
     {
         ULogError("Vulkan Command Buffers", "Could not allocate command buffers!");
     }
@@ -48,10 +45,10 @@ void VulkanCommandBuffers::Initalize()
 
         VkRenderPassBeginInfo renderPassInfo = {};
         renderPassInfo.sType = VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO;
-        renderPassInfo.renderPass = RenderPass->renderPass;
-        renderPassInfo.framebuffer = SwapChain->swapChainFramebuffers[i];
+        renderPassInfo.renderPass = RHI->RenderPass->renderPass;
+        renderPassInfo.framebuffer = RHI->SwapChain->swapChainFramebuffers[i];
         renderPassInfo.renderArea.offset = {0, 0};
-        renderPassInfo.renderArea.extent = SwapChain->swapChainExtent;
+        renderPassInfo.renderArea.extent = RHI->SwapChain->swapChainExtent;
         
         VkClearValue clearColor = {0.0f, 0.0f, 0.0f, 1.0f};
         renderPassInfo.clearValueCount = 1;
@@ -59,9 +56,12 @@ void VulkanCommandBuffers::Initalize()
 
         vkCmdBeginRenderPass(commandBuffers[i], &renderPassInfo, VK_SUBPASS_CONTENTS_INLINE);
 
-            vkCmdBindPipeline(commandBuffers[i], VK_PIPELINE_BIND_POINT_GRAPHICS, Shaders->GraphicsPipeline->graphicsPipeline);
+            vkCmdBindPipeline(commandBuffers[i], VK_PIPELINE_BIND_POINT_GRAPHICS, static_cast<VulkanShaderPool*>(RHI->ShaderPools[0])->GraphicsPipeline->graphicsPipeline);
 
-            vkCmdDraw(commandBuffers[i], 3, 1, 0, 0);
+            for(auto mesh : RHI->Meshes)
+            {
+                mesh->Draw((int)i);
+            }
 
         vkCmdEndRenderPass(commandBuffers[i]);
 

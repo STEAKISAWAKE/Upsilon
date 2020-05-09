@@ -6,6 +6,7 @@
 #include "Vulkan/VulkanSwapChain.h"
 #include "Vulkan/VulkanRenderPass.h"
 #include "Vulkan/VulkanShader.h"
+#include "Vulkan/VulkanVertex.h"
 
 #include "Log.h"
 
@@ -22,6 +23,7 @@ void VulkanGraphicsPipeline::Initalize()
 
     VulkanShader* vertexShader = static_cast<VulkanShader*>(Shaders->vertexShader);
     VulkanShader* fragmentShader = static_cast<VulkanShader*>(Shaders->fragmentShader);
+
     VkPipelineShaderStageCreateInfo vertShaderStageInfo{};
     vertShaderStageInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO;
     vertShaderStageInfo.stage = VK_SHADER_STAGE_VERTEX_BIT;
@@ -36,10 +38,15 @@ void VulkanGraphicsPipeline::Initalize()
 
     VkPipelineShaderStageCreateInfo shaderStages[] = { vertShaderStageInfo, fragShaderStageInfo };
 
+    auto bindingDescription = VulkanVertex2D::GetBindingDescription();
+    auto attributeDescriptions = VulkanVertex2D::GetAttributeDescriptions();
+
     VkPipelineVertexInputStateCreateInfo vertexInputInfo{};
     vertexInputInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_VERTEX_INPUT_STATE_CREATE_INFO;
-    vertexInputInfo.vertexBindingDescriptionCount = 0;
-    vertexInputInfo.vertexAttributeDescriptionCount = 0;
+    vertexInputInfo.vertexBindingDescriptionCount = 1;
+    vertexInputInfo.vertexAttributeDescriptionCount = static_cast<uint32_t>(attributeDescriptions.size());
+    vertexInputInfo.pVertexBindingDescriptions = &bindingDescription;
+    vertexInputInfo.pVertexAttributeDescriptions = attributeDescriptions.data();
 
     VkPipelineInputAssemblyStateCreateInfo inputAssembly{};
     inputAssembly.sType = VK_STRUCTURE_TYPE_PIPELINE_INPUT_ASSEMBLY_STATE_CREATE_INFO;

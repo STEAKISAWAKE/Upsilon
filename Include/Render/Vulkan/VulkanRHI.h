@@ -18,6 +18,7 @@ class VulkanFramebuffers;
 class VulkanCommandPool;
 class VulkanCommandBuffers;
 class VulkanSemaphores;
+class VulkanBuffers;
 
 class VulkanRHI
     : public RenderRHI
@@ -44,23 +45,28 @@ public:
     VulkanCommandPool* CommandPool;
     VulkanCommandBuffers* CommandBuffers;
     VulkanSemaphores* Semaphores;
+    VulkanBuffers* Buffers;
 
 public:
     void Initalize() override;
     void Cleanup() override;
+
+    void InitalizeMeshes() override;
+    void CleanupMeshes() override;
+
+    void InitalizeShaders() override;
+    void CleanupShaders(bool everything) override;
 
     void RecreateSwapChain() override;
     void CleanupSwapChain();
 
     void DrawFrame() override;
 
-    void InitalizeShaders();
-    void CleanupShaders(bool everything);
-
     void FramebufferResized() override;
 
     ShaderPool* CreateShaderPool() override;
     Shader* CreateShader(int shaderIndex, ShaderType type, const std::vector<char>& code) override;
+    RenderMesh* CreateMesh();
 
 private:
     bool framebufferResized = false;

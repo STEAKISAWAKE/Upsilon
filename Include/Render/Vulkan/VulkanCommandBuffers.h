@@ -6,28 +6,20 @@
 
 #include "vulkan/vulkan.h"
 
-class VulkanShaderPool;
+class VulkanRHI;
 
-class VulkanDevice;
-class VulkanSwapChain;
-class VulkanRenderPass;
-class VulkanCommandPool;
+class VulkanShaderPool;
 
 class VulkanCommandBuffers
 {
 
 public:
-    VulkanCommandBuffers(VulkanDevice* device, VulkanSwapChain* swapChain, VulkanRenderPass* renderPass, VulkanShaderPool* shaders, VulkanCommandPool* commandPool);
+    VulkanCommandBuffers(VulkanRHI* rhi);
 
 public:
     std::vector<VkCommandBuffer> commandBuffers;
 
-    VulkanShaderPool* Shaders;
-
-    VulkanDevice* Device;
-    VulkanSwapChain* SwapChain;
-    VulkanRenderPass* RenderPass;
-    VulkanCommandPool* CommandPool;
+    VulkanRHI* RHI;
 
 public:
     void Initalize();

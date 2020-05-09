@@ -1,6 +1,8 @@
 #include "Render.h"
 #include "RenderRHI.h"
 #include "Shader.h"
+#include "Vertex.h"
+#include "RenderMesh.h"
 
 int main()
 {
@@ -9,6 +11,16 @@ int main()
 
     Shader* vert = render.RHI->CreateShader(0, E_VertexShader, RenderRHI::LoadShader("C:\\Users\\Steak\\Documents\\GitHub\\Upsilon\\Shaders\\vert.spv"));
     Shader* frag = render.RHI->CreateShader(0, E_FragmentShader, RenderRHI::LoadShader("C:\\Users\\Steak\\Documents\\GitHub\\Upsilon\\Shaders\\frag.spv"));
+
+    RenderMesh* mesh = render.RHI->CreateMesh();
+
+    const std::vector<Vertex2D> vertices = {
+        {{0.0f, -0.5f}, {1.0f, 0.0f, 0.0f}},
+        {{0.5f, 0.5f}, {0.0f, 1.0f, 0.0f}},
+        {{-0.5f, 0.5f}, {0.0f, 0.0f, 1.0f}}
+    };
+
+    mesh->Vertices = vertices;
 
     render.Initalize();
 

@@ -21,6 +21,10 @@ add_library(UpsilonRender STATIC
     Vulkan/VulkanCommandPool.cpp
     Vulkan/VulkanCommandBuffers.cpp
     Vulkan/VulkanSemaphores.cpp
+    Vulkan/VulkanBuffers.cpp
+    Vulkan/VulkanMesh.cpp
+    Vulkan/VulkanVertex.cpp
+    
 
     Shader.cpp
     Texture.cpp

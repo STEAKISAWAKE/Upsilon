@@ -39,6 +39,12 @@ public:
     virtual void Initalize() {};
     virtual void Cleanup() {};
 
+    virtual void InitalizeMeshes() {};
+    virtual void CleanupMeshes() {};
+
+    virtual void InitalizeShaders() {};
+    virtual void CleanupShaders(bool everything) {};
+
     virtual void RecreateSwapChain() {};
 
     virtual void DrawFrame() {};
@@ -55,6 +61,7 @@ public:
 
 public:
     std::vector<ShaderPool*> ShaderPools;
+    std::vector<RenderMesh*> Meshes;
 
 };
 

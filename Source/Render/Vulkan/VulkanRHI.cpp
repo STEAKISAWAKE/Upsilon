@@ -17,6 +17,8 @@
 #include "Vulkan/VulkanCommandPool.h"
 #include "Vulkan/VulkanCommandBuffers.h"
 #include "Vulkan/VulkanSemaphores.h"
+#include "Vulkan/VulkanBuffers.h"
+#include "Vulkan/VulkanMesh.h"
 
 #include "Log.h"
 
@@ -42,12 +44,14 @@ VulkanRHI::VulkanRHI(Render* renderer)
 
     ShaderPools.push_back(CreateShaderPool()); // We must have at least one shader pool
 
-    CommandBuffers = new VulkanCommandBuffers(Device, SwapChain, RenderPass, static_cast<VulkanShaderPool*>(ShaderPools[0]), CommandPool);
+    CommandBuffers = new VulkanCommandBuffers(this);
     Semaphores = new VulkanSemaphores(Device, SwapChain);
+    Buffers = new VulkanBuffers(PhysicalDevice, Device);
 }
 
 VulkanRHI::~VulkanRHI()
 {
+    delete Buffers;
     delete Semaphores;
     delete CommandBuffers;
     delete CommandPool;
@@ -74,6 +78,7 @@ void VulkanRHI::Initalize()
     InitalizeShaders(); // Also creates graphics pipeline
     Framebuffers->Initalize();
     CommandPool->Initalize();
+    InitalizeMeshes();
     CommandBuffers->Initalize();
     Semaphores->Initalize();
 }
@@ -83,6 +88,7 @@ void VulkanRHI::Cleanup()
     vkDeviceWaitIdle(Device->device);
 
     CleanupSwapChain();
+    CleanupMeshes();
     Semaphores->Cleanup();
     CommandPool->Cleanup();
     Device->Cleanup();
@@ -90,6 +96,40 @@ void VulkanRHI::Cleanup()
     Surface->Cleanup();
     Instance->Cleanup();
 }
+
+void VulkanRHI::InitalizeMeshes()
+{
+    for(auto mesh : Meshes)
+    {
+        mesh->Initalize();
+    }
+}
+
+void VulkanRHI::CleanupMeshes()
+{
+    for(auto mesh : Meshes)
+    {
+        mesh->Cleanup();
+    }
+}
+
+
+void VulkanRHI::InitalizeShaders()
+{
+    for(auto shaderGroup : ShaderPools)
+    {
+        shaderGroup->Initalize();
+    }
+}
+
+void VulkanRHI::CleanupShaders(bool everything)
+{
+    for(auto shaderGroup : ShaderPools)
+    {
+        shaderGroup->Cleanup(everything);
+    }
+}
+
 
 void VulkanRHI::RecreateSwapChain()
 {
@@ -106,7 +146,6 @@ void VulkanRHI::RecreateSwapChain()
     vkDeviceWaitIdle(Device->device);
 
     CleanupSwapChain();
-
     SwapChain->Initalize();
     ImageViews->Initalize();
     RenderPass->Initalize();
@@ -198,22 +237,6 @@ void VulkanRHI::DrawFrame()
     vkQueueWaitIdle(Device->presentQueue);
 }
 
-void VulkanRHI::InitalizeShaders()
-{
-    for(auto shaderGroup : ShaderPools)
-    {
-        shaderGroup->Initalize();
-    }
-}
-
-void VulkanRHI::CleanupShaders(bool everything)
-{
-    for(auto shaderGroup : ShaderPools)
-    {
-        shaderGroup->Cleanup(everything);
-    }
-}
-
 ShaderPool* VulkanRHI::CreateShaderPool()
 {
     return new VulkanShaderPool(Device, SwapChain, RenderPass);
@@ -263,6 +286,13 @@ Shader* VulkanRHI::CreateShader(int shaderIndex, ShaderType type, const std::vec
 
 
     return newShader;
+}
+
+RenderMesh* VulkanRHI::CreateMesh()
+{
+    RenderMesh* newMesh = new VulkanMesh(this);
+
+    return newMesh;
 }
 
 void VulkanRHI::FramebufferResized()
