@@ -3,6 +3,8 @@
 
 #include "RenderRHI.h"
 
+#include <rttr/registration>
+
 class Render;
 
 class VulkanInstance;
@@ -54,11 +56,13 @@ public:
     void Initalize() override;
     void InitalizeMeshes() override;
     void InitalizeMeshUniformBuffers();
+    void InitalizeMeshDescriptorSets();
     void InitalizeShaders() override;
 
     void Cleanup() override;
     void CleanupMeshes() override;
     void CleanupMeshUniformBuffers();
+    void CleanupMeshDescriptorSets();
     void CleanupShaders(bool everything) override;
 
     void RecreateSwapChain() override;

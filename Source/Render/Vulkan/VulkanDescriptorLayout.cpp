@@ -13,10 +13,10 @@ void VulkanDescriptorLayout::Initalize()
 {
     VkDescriptorSetLayoutBinding cubLayoutBinding = {};
     cubLayoutBinding.binding = 0;
-    cubLayoutBinding.descriptorCount = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
     cubLayoutBinding.descriptorCount = 1;
-    cubLayoutBinding.stageFlags = VK_SHADER_STAGE_VERTEX_BIT;
+    cubLayoutBinding.descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
     cubLayoutBinding.pImmutableSamplers = nullptr;
+    cubLayoutBinding.stageFlags = VK_SHADER_STAGE_VERTEX_BIT;
 
 
     VkDescriptorSetLayoutCreateInfo layoutInfo = {};

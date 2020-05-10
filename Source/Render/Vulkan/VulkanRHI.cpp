@@ -82,9 +82,11 @@ void VulkanRHI::Initalize()
     ImageViews->Initalize();
     RenderPass->Initalize();
     DescriptorLayout->Initalize();
-    DescriptorPool->Initalize();
-    InitalizeShaders(); // Also creates graphics pipeline
     InitalizeMeshUniformBuffers();
+    DescriptorPool->Initalize();
+    InitalizeMeshDescriptorSets();
+    InitalizeShaders(); // Also creates graphics pipeline
+
 
     Framebuffers->Initalize();
     CommandPool->Initalize();
@@ -125,6 +127,14 @@ void VulkanRHI::InitalizeMeshUniformBuffers()
     }
 }
 
+void VulkanRHI::InitalizeMeshDescriptorSets()
+{
+    for(auto mesh : Meshes)
+    {
+        static_cast<VulkanMesh*>(mesh)->InitalizeDescriptorSets();
+    }
+}
+
 void VulkanRHI::CleanupMeshes()
 {
     for(auto mesh : Meshes)
@@ -138,6 +148,14 @@ void VulkanRHI::CleanupMeshUniformBuffers()
     for(auto mesh : Meshes)
     {
         static_cast<VulkanMesh*>(mesh)->CleanupUniformBuffers();
+    }
+}
+
+void VulkanRHI::CleanupMeshDescriptorSets()
+{
+    for(auto mesh : Meshes)
+    {
+        static_cast<VulkanMesh*>(mesh)->CleanupDescriptorSets();
     }
 }
 
@@ -180,6 +198,8 @@ void VulkanRHI::RecreateSwapChain()
     Framebuffers->Initalize();
     InitalizeMeshUniformBuffers();
     DescriptorPool->Initalize();
+    InitalizeMeshDescriptorSets();
+    
     CommandBuffers->Initalize();
 }
 
@@ -193,6 +213,7 @@ void VulkanRHI::CleanupSwapChain()
     SwapChain->Cleanup();
     CleanupMeshUniformBuffers();
     DescriptorPool->Cleanup();
+    CleanupMeshDescriptorSets();
 }
 
 void VulkanRHI::DrawFrame()
@@ -276,7 +297,7 @@ void VulkanRHI::UpdateUniformBuffers(int imageIndex)
     {
         auto vkMesh = static_cast<VulkanMesh*>(mesh);
 
-        vkMesh->CUB.projection[1][1] *= -1;
+
 
         void* data;
         vkMapMemory(Device->device, vkMesh->uniformBuffersMemory[imageIndex], 0, sizeof(vkMesh->CUB), 0, &data);
@@ -383,7 +404,6 @@ void VulkanShaderPool::Cleanup(bool everything)
     if(everything && GraphicsPipeline != nullptr)
     {
         GraphicsPipeline->Cleanup();
-        delete GraphicsPipeline;
     }
 }
 

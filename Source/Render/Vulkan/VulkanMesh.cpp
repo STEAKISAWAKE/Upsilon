@@ -5,19 +5,23 @@
 #include "Vulkan/VulkanDevice.h"
 #include "Vulkan/VulkanCommandBuffers.h"
 #include "Vulkan/VulkanBuffers.h"
-#include "VulkanSwapChain.h"
+#include "Vulkan/VulkanSwapChain.h"
+#include "Vulkan/VulkanGraphicsPipeline.h"
+#include "Vulkan/VulkanDescriptorLayout.h"
+#include "Vulkan/VulkanDescriptorPool.h"
+#include "Vulkan/VulkanDescriptorSets.h"
 
 VulkanMesh::VulkanMesh(RenderRHI* rhi)
     : RenderMesh(rhi)
 {
-
+    VulkanRHI* renderRHI = static_cast<VulkanRHI*>(RHI);
+    descriptorSets = new VulkanDescriptorSets(renderRHI->Device, renderRHI->SwapChain, renderRHI->DescriptorPool, renderRHI->DescriptorLayout);
 }
 
 void VulkanMesh::Initalize()
 {
-    VulkanRHI* RenderRHI = static_cast<VulkanRHI*>(RHI);
-
-    RenderRHI->Buffers->CreateMeshBuffers(this);
+    VulkanRHI* renderRHI = static_cast<VulkanRHI*>(RHI);
+    renderRHI->Buffers->CreateMeshBuffers(this);
 }
 
 void VulkanMesh::Cleanup()
@@ -43,6 +47,16 @@ void VulkanMesh::Draw(int commandBuffersIndex)
     vkCmdBindVertexBuffers(renderRHI->CommandBuffers->commandBuffers[commandBuffersIndex], 0, 1, vertexBuffers, offsets);
     vkCmdBindIndexBuffer(renderRHI->CommandBuffers->commandBuffers[commandBuffersIndex], indexBuffer, 0, VK_INDEX_TYPE_UINT32);
 
+    vkCmdBindDescriptorSets(
+        renderRHI->CommandBuffers->commandBuffers[commandBuffersIndex], 
+        VK_PIPELINE_BIND_POINT_GRAPHICS, 
+        static_cast<VulkanShaderPool*>(renderRHI->ShaderPools[0])->GraphicsPipeline->pipelineLayout, 
+        0, 
+        1, 
+        &descriptorSets->descriptorSets[commandBuffersIndex], 
+        0, 
+        nullptr);
+        
     vkCmdDrawIndexed(renderRHI->CommandBuffers->commandBuffers[commandBuffersIndex], static_cast<uint32_t>(Indices.size()), 1, 0, 0, 0);
 }
 
@@ -53,6 +67,13 @@ void VulkanMesh::InitalizeUniformBuffers()
     renderRHI->Buffers->CreateUniformBuffers(this);
 }
 
+
+void VulkanMesh::InitalizeDescriptorSets()
+{
+    descriptorSets->CreateDescriptorSets(this);
+}
+
+
 void VulkanMesh::CleanupUniformBuffers()
 {
     VulkanRHI* renderRHI = static_cast<VulkanRHI*>(RHI);
@@ -62,6 +83,11 @@ void VulkanMesh::CleanupUniformBuffers()
         vkDestroyBuffer(renderRHI->Device->device,uniformBuffers[i], nullptr);
         vkFreeMemory(renderRHI->Device->device, uniformBuffersMemory[i], nullptr);
     }
+}
+
+void VulkanMesh::CleanupDescriptorSets()
+{
+    descriptorSets->descriptorSets.clear();
 }
 
 void VulkanMesh::UpdateUniformBuffers(int imageIndex)
