@@ -8,13 +8,14 @@ class ShaderPool;
 
 class VulkanDevice;
 class VulkanSwapChain;
+class VulkanDescriptorLayout;
 class VulkanRenderPass;
 
 class VulkanGraphicsPipeline
 {
 
 public:
-    VulkanGraphicsPipeline(VulkanDevice* device, VulkanSwapChain* swapChain, VulkanRenderPass* renderPass, ShaderPool* shaders);
+    VulkanGraphicsPipeline(VulkanDevice* device, VulkanSwapChain* swapChain, VulkanDescriptorLayout* descriptorLayout, VulkanRenderPass* renderPass, ShaderPool* shaders);
 
 public:
     VkPipelineLayout pipelineLayout;
@@ -23,6 +24,7 @@ public:
     
     VulkanDevice* Device;
     VulkanSwapChain* SwapChain;
+    VulkanDescriptorLayout* DescriptorLayout;
     VulkanRenderPass* RenderPass;
 
 public:

@@ -4,16 +4,18 @@
 
 #include "Vulkan/VulkanDevice.h"
 #include "Vulkan/VulkanSwapChain.h"
+#include "Vulkan/VulkanDescriptorLayout.h"
 #include "Vulkan/VulkanRenderPass.h"
 #include "Vulkan/VulkanShader.h"
 #include "Vulkan/VulkanVertex.h"
 
 #include "Log.h"
 
-VulkanGraphicsPipeline::VulkanGraphicsPipeline(VulkanDevice* device, VulkanSwapChain* swapChain, VulkanRenderPass* renderPass, ShaderPool* shaders)
+VulkanGraphicsPipeline::VulkanGraphicsPipeline(VulkanDevice* device, VulkanSwapChain* swapChain, VulkanDescriptorLayout* descriptorLayout, VulkanRenderPass* renderPass, ShaderPool* shaders)
 {
     Device = device;
     SwapChain = swapChain;
+    DescriptorLayout = descriptorLayout;
     RenderPass = renderPass;
     Shaders = shaders;
 }
@@ -91,7 +93,7 @@ void VulkanGraphicsPipeline::Initalize()
     colorBlendAttachment.colorWriteMask = VK_COLOR_COMPONENT_R_BIT | VK_COLOR_COMPONENT_G_BIT | VK_COLOR_COMPONENT_B_BIT | VK_COLOR_COMPONENT_A_BIT;
     colorBlendAttachment.blendEnable = VK_FALSE;
 
-    VkPipelineColorBlendStateCreateInfo colorBlending{};
+    VkPipelineColorBlendStateCreateInfo colorBlending = {};
     colorBlending.sType = VK_STRUCTURE_TYPE_PIPELINE_COLOR_BLEND_STATE_CREATE_INFO;
     colorBlending.logicOpEnable = VK_FALSE;
     colorBlending.logicOp = VK_LOGIC_OP_COPY;
@@ -102,10 +104,10 @@ void VulkanGraphicsPipeline::Initalize()
     colorBlending.blendConstants[2] = 0.0f;
     colorBlending.blendConstants[3] = 0.0f;
 
-    VkPipelineLayoutCreateInfo pipelineLayoutInfo{};
+    VkPipelineLayoutCreateInfo pipelineLayoutInfo = {};
     pipelineLayoutInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_LAYOUT_CREATE_INFO;
-    pipelineLayoutInfo.setLayoutCount = 0;
-    pipelineLayoutInfo.pushConstantRangeCount = 0;
+    pipelineLayoutInfo.setLayoutCount = 1;
+    pipelineLayoutInfo.pSetLayouts = &DescriptorLayout->descriptorSetLayout;
 
     if(vkCreatePipelineLayout(Device->device, &pipelineLayoutInfo, nullptr, &pipelineLayout))
     {

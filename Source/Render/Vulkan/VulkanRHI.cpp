@@ -10,6 +10,8 @@
 #include "Vulkan/VulkanDevice.h"
 #include "Vulkan/VulkanSwapChain.h"
 #include "Vulkan/VulkanImageViews.h"
+#include "Vulkan/VulkanDescriptorLayout.h"
+#include "Vulkan/VulkanDescriptorPool.h"
 #include "Vulkan/VulkanShader.h"
 #include "Vulkan/VulkanGraphicsPipeline.h"
 #include "Vulkan/VulkanRenderPass.h"
@@ -37,16 +39,20 @@ VulkanRHI::VulkanRHI(Render* renderer)
     PhysicalDevice = new VulkanPhysicalDevice(Instance, Surface);
     Device = new VulkanDevice(PhysicalDevice);
     SwapChain = new VulkanSwapChain(&Renderer->Window, PhysicalDevice, Device, Surface);
+    DescriptorLayout = new VulkanDescriptorLayout(Device);
+    DescriptorPool = new VulkanDescriptorPool(Device, SwapChain);
     ImageViews = new VulkanImageViews(Device, SwapChain);
+    CommandPool = new VulkanCommandPool(Device, PhysicalDevice);
+    Buffers = new VulkanBuffers(PhysicalDevice, Device, SwapChain, CommandPool);
     RenderPass = new VulkanRenderPass(Device, SwapChain);
     Framebuffers = new VulkanFramebuffers(Device, SwapChain, RenderPass);
-    CommandPool = new VulkanCommandPool(Device, PhysicalDevice);
+
 
     ShaderPools.push_back(CreateShaderPool()); // We must have at least one shader pool
 
     CommandBuffers = new VulkanCommandBuffers(this);
     Semaphores = new VulkanSemaphores(Device, SwapChain);
-    Buffers = new VulkanBuffers(PhysicalDevice, Device, CommandPool);
+
 }
 
 VulkanRHI::~VulkanRHI()
@@ -75,7 +81,11 @@ void VulkanRHI::Initalize()
     SwapChain->Initalize();
     ImageViews->Initalize();
     RenderPass->Initalize();
+    DescriptorLayout->Initalize();
+    DescriptorPool->Initalize();
     InitalizeShaders(); // Also creates graphics pipeline
+    InitalizeMeshUniformBuffers();
+
     Framebuffers->Initalize();
     CommandPool->Initalize();
     InitalizeMeshes();
@@ -88,6 +98,8 @@ void VulkanRHI::Cleanup()
     vkDeviceWaitIdle(Device->device);
 
     CleanupSwapChain();
+
+    DescriptorLayout->Cleanup();
     CleanupMeshes();
     Semaphores->Cleanup();
     CommandPool->Cleanup();
@@ -105,6 +117,14 @@ void VulkanRHI::InitalizeMeshes()
     }
 }
 
+void VulkanRHI::InitalizeMeshUniformBuffers()
+{
+    for(auto mesh : Meshes)
+    {
+        static_cast<VulkanMesh*>(mesh)->InitalizeUniformBuffers();
+    }
+}
+
 void VulkanRHI::CleanupMeshes()
 {
     for(auto mesh : Meshes)
@@ -113,6 +133,13 @@ void VulkanRHI::CleanupMeshes()
     }
 }
 
+void VulkanRHI::CleanupMeshUniformBuffers()
+{
+    for(auto mesh : Meshes)
+    {
+        static_cast<VulkanMesh*>(mesh)->CleanupUniformBuffers();
+    }
+}
 
 void VulkanRHI::InitalizeShaders()
 {
@@ -151,6 +178,8 @@ void VulkanRHI::RecreateSwapChain()
     RenderPass->Initalize();
     InitalizeShaders();
     Framebuffers->Initalize();
+    InitalizeMeshUniformBuffers();
+    DescriptorPool->Initalize();
     CommandBuffers->Initalize();
 }
 
@@ -162,6 +191,8 @@ void VulkanRHI::CleanupSwapChain()
     RenderPass->Cleanup();
     ImageViews->Cleanup();
     SwapChain->Cleanup();
+    CleanupMeshUniformBuffers();
+    DescriptorPool->Cleanup();
 }
 
 void VulkanRHI::DrawFrame()
@@ -188,6 +219,8 @@ void VulkanRHI::DrawFrame()
     }
 
     Semaphores->imagesInFlight[imageIndex] = Semaphores->inFlightFences[currentFrame];
+
+    UpdateUniformBuffers(imageIndex);
 
     VkSubmitInfo submitInfo = {};
     submitInfo.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO;
@@ -237,9 +270,24 @@ void VulkanRHI::DrawFrame()
     vkQueueWaitIdle(Device->presentQueue);
 }
 
+void VulkanRHI::UpdateUniformBuffers(int imageIndex)
+{
+    for(auto mesh : Meshes)
+    {
+        auto vkMesh = static_cast<VulkanMesh*>(mesh);
+
+        vkMesh->CUB.projection[1][1] *= -1;
+
+        void* data;
+        vkMapMemory(Device->device, vkMesh->uniformBuffersMemory[imageIndex], 0, sizeof(vkMesh->CUB), 0, &data);
+            memcpy(data, &vkMesh->CUB, sizeof(vkMesh->CUB));
+        vkUnmapMemory(Device->device, vkMesh->uniformBuffersMemory[imageIndex]);
+    }
+}
+
 ShaderPool* VulkanRHI::CreateShaderPool()
 {
-    return new VulkanShaderPool(Device, SwapChain, RenderPass);
+    return new VulkanShaderPool(Device, SwapChain, DescriptorLayout, RenderPass);
 }
 
 Shader* VulkanRHI::CreateShader(int shaderIndex, ShaderType type, const std::vector<char>& code)
@@ -302,11 +350,15 @@ void VulkanRHI::FramebufferResized()
 
 // VulkanGraphicsShaders class
 
-VulkanShaderPool::VulkanShaderPool(VulkanDevice* device, VulkanSwapChain* swapChain, VulkanRenderPass* renderPass)
+VulkanShaderPool::VulkanShaderPool(VulkanDevice* device, VulkanSwapChain* swapChain, VulkanDescriptorLayout* descriptorLayout, VulkanRenderPass* renderPass)
 {
     Device = device;
     SwapChain = swapChain;
+    DescriptorLayout = descriptorLayout;
     RenderPass = renderPass;
+    
+
+    GraphicsPipeline = new VulkanGraphicsPipeline(Device, SwapChain, DescriptorLayout, RenderPass, this);
 }
 
 void VulkanShaderPool::Initalize()
@@ -315,7 +367,6 @@ void VulkanShaderPool::Initalize()
     vertexShader->Initalize();
     fragmentShader->Initalize();
 
-    GraphicsPipeline = new VulkanGraphicsPipeline(Device, SwapChain, RenderPass, this);
     GraphicsPipeline->Initalize();
 
     Cleanup(false);

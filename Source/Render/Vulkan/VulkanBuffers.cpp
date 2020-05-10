@@ -1,16 +1,18 @@
 #include "VulkanBuffers.h"
 
-#include "VulkanPhysicalDevice.h"
-#include "VulkanDevice.h"
-#include "VulkanCommandPool.h"
-#include "VulkanMesh.h"
+#include "Vulkan/VulkanPhysicalDevice.h"
+#include "Vulkan/VulkanDevice.h"
+#include "Vulkan/VulkanSwapChain.h"
+#include "Vulkan/VulkanCommandPool.h"
+#include "Vulkan/VulkanMesh.h"
 
 #include "Log.h"
 
-VulkanBuffers::VulkanBuffers(VulkanPhysicalDevice* physicalDevice, VulkanDevice* device, VulkanCommandPool* commandPool)
+VulkanBuffers::VulkanBuffers(VulkanPhysicalDevice* physicalDevice, VulkanDevice* device, VulkanSwapChain* swapChain, VulkanCommandPool* commandPool)
 {
     PhysicalDevice = physicalDevice;
     Device = device;
+    SwapChain = swapChain;
     CommandPool = commandPool;
 }
 
@@ -121,8 +123,21 @@ void VulkanBuffers::CreateIndexBuffer(VulkanMesh* mesh)
 
     vkDestroyBuffer(Device->device, stagingBuffer, nullptr);
     vkFreeMemory(Device->device, stagingBufferMemory, nullptr);
-
 }
+
+void VulkanBuffers::CreateUniformBuffers(VulkanMesh* mesh)
+{
+    VkDeviceSize bufferSize = sizeof(CameraUniformBuffer);
+
+    mesh->uniformBuffers.resize(SwapChain->swapChainImages.size());
+    mesh->uniformBuffersMemory.resize(SwapChain->swapChainImages.size());
+
+    for(size_t i = 0;  i < SwapChain->swapChainImages.size(); i++)
+    {
+        CreateBuffer(bufferSize, VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT, mesh->uniformBuffers[i], mesh->uniformBuffersMemory[i]);
+    }
+}
+
 
 uint32_t VulkanBuffers::FindMemoryType(uint32_t typeFilter, VkMemoryPropertyFlags properties)
 {

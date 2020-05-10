@@ -5,6 +5,7 @@ add_library(UpsilonRender STATIC
 
     RenderWindow.cpp
 
+
     RenderRHI.cpp
     Vulkan/VulkanRHI.cpp
     Vulkan/VulkanInstance.cpp
@@ -16,16 +17,20 @@ add_library(UpsilonRender STATIC
     Vulkan/VulkanImageViews.cpp
     Vulkan/VulkanShader.cpp
     Vulkan/VulkanRenderPass.cpp
+    Vulkan/VulkanDescriptorLayout.cpp
     Vulkan/VulkanGraphicsPipeline.cpp
     Vulkan/VulkanFramebuffers.cpp
     Vulkan/VulkanCommandPool.cpp
     Vulkan/VulkanCommandBuffers.cpp
     Vulkan/VulkanSemaphores.cpp
     Vulkan/VulkanBuffers.cpp
+    Vulkan/VulkanDescriptorPool.cpp
+    Vulkan/VulkanDescriptorSets.cpp
     Vulkan/VulkanMesh.cpp
     Vulkan/VulkanVertex.cpp
-    
+    Vulkan/VulkanCameraUniformBuffer.cpp
 
+    CameraUniformBuffer.cpp
     Shader.cpp
     Texture.cpp
     RenderMesh.cpp

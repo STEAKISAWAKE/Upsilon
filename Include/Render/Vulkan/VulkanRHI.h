@@ -12,6 +12,8 @@ class VulkanPhysicalDevice;
 class VulkanDevice;
 class VulkanSwapChain;
 class VulkanImageViews;
+class VulkanDescriptorLayout;
+class VulkanDescriptorPool;
 class VulkanGraphicsPipeline;
 class VulkanRenderPass;
 class VulkanFramebuffers;
@@ -39,7 +41,8 @@ public:
     VulkanDevice* Device;
     VulkanSwapChain* SwapChain;
     VulkanImageViews* ImageViews;
-    VulkanGraphicsPipeline* GraphicsPipeline;
+    VulkanDescriptorLayout* DescriptorLayout;
+    VulkanDescriptorPool* DescriptorPool;
     VulkanRenderPass* RenderPass;
     VulkanFramebuffers* Framebuffers;
     VulkanCommandPool* CommandPool;
@@ -49,18 +52,21 @@ public:
 
 public:
     void Initalize() override;
-    void Cleanup() override;
-
     void InitalizeMeshes() override;
-    void CleanupMeshes() override;
-
+    void InitalizeMeshUniformBuffers();
     void InitalizeShaders() override;
+
+    void Cleanup() override;
+    void CleanupMeshes() override;
+    void CleanupMeshUniformBuffers();
     void CleanupShaders(bool everything) override;
 
     void RecreateSwapChain() override;
     void CleanupSwapChain();
 
     void DrawFrame() override;
+
+    void UpdateUniformBuffers(int imageIndex);
 
     void FramebufferResized() override;
 
@@ -79,13 +85,14 @@ class VulkanShaderPool
 {
 
 public:
-    VulkanShaderPool(VulkanDevice* device, VulkanSwapChain* swapChain, VulkanRenderPass* renderPass);
+    VulkanShaderPool(VulkanDevice* device, VulkanSwapChain* swapChain, VulkanDescriptorLayout* descriptorLayout, VulkanRenderPass* renderPass);
 
 public:
     VulkanGraphicsPipeline* GraphicsPipeline; // Every group of vulkan shaders needs a new pipeline
 
     VulkanDevice* Device; 
     VulkanSwapChain* SwapChain;
+    VulkanDescriptorLayout* DescriptorLayout;
     VulkanRenderPass* RenderPass;
 
     void Initalize() override;

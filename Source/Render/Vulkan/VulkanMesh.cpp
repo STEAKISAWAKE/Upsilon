@@ -5,6 +5,7 @@
 #include "Vulkan/VulkanDevice.h"
 #include "Vulkan/VulkanCommandBuffers.h"
 #include "Vulkan/VulkanBuffers.h"
+#include "VulkanSwapChain.h"
 
 VulkanMesh::VulkanMesh(RenderRHI* rhi)
     : RenderMesh(rhi)
@@ -17,7 +18,6 @@ void VulkanMesh::Initalize()
     VulkanRHI* RenderRHI = static_cast<VulkanRHI*>(RHI);
 
     RenderRHI->Buffers->CreateMeshBuffers(this);
-
 }
 
 void VulkanMesh::Cleanup()
@@ -44,4 +44,35 @@ void VulkanMesh::Draw(int commandBuffersIndex)
     vkCmdBindIndexBuffer(renderRHI->CommandBuffers->commandBuffers[commandBuffersIndex], indexBuffer, 0, VK_INDEX_TYPE_UINT32);
 
     vkCmdDrawIndexed(renderRHI->CommandBuffers->commandBuffers[commandBuffersIndex], static_cast<uint32_t>(Indices.size()), 1, 0, 0, 0);
+}
+
+void VulkanMesh::InitalizeUniformBuffers()
+{
+    VulkanRHI* renderRHI = static_cast<VulkanRHI*>(RHI);
+
+    renderRHI->Buffers->CreateUniformBuffers(this);
+}
+
+void VulkanMesh::CleanupUniformBuffers()
+{
+    VulkanRHI* renderRHI = static_cast<VulkanRHI*>(RHI);
+
+    for(size_t i = 0; i < renderRHI->SwapChain->swapChainImages.size(); i++)
+    {
+        vkDestroyBuffer(renderRHI->Device->device,uniformBuffers[i], nullptr);
+        vkFreeMemory(renderRHI->Device->device, uniformBuffersMemory[i], nullptr);
+    }
+}
+
+void VulkanMesh::UpdateUniformBuffers(int imageIndex)
+{
+    VulkanRHI* renderRHI = static_cast<VulkanRHI*>(RHI);
+    
+    CUB.projection[1][1] *= -1; // Flip the y scale because glm was designed for opengl
+    
+    void* data;
+    vkMapMemory(renderRHI->Device->device, uniformBuffersMemory[imageIndex], 0, sizeof(CUB), 0, &data);
+        memcpy(data, &CUB, sizeof(CUB));
+    vkUnmapMemory(renderRHI->Device->device, uniformBuffersMemory[imageIndex]);
+
 }

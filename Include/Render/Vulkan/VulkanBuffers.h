@@ -6,6 +6,7 @@
 
 class VulkanPhysicalDevice;
 class VulkanDevice;
+class VulkanSwapChain;
 class VulkanCommandPool;
 class VulkanMesh;
 
@@ -13,11 +14,12 @@ class VulkanBuffers
 {
 
 public:
-    VulkanBuffers(VulkanPhysicalDevice* physicalDevice, VulkanDevice* device, VulkanCommandPool* commandPook);
+    VulkanBuffers(VulkanPhysicalDevice* physicalDevice, VulkanDevice* device, VulkanSwapChain* swapChain,  VulkanCommandPool* commandPook);
 
 public:
     VulkanPhysicalDevice* PhysicalDevice;
     VulkanDevice* Device;
+    VulkanSwapChain* SwapChain;
     VulkanCommandPool* CommandPool;
 
 public:
@@ -27,6 +29,7 @@ public:
     void CreateMeshBuffers(VulkanMesh* mesh);
     void CreateVertexBuffer(VulkanMesh* mesh);
     void CreateIndexBuffer(VulkanMesh* mesh);
+    void CreateUniformBuffers(VulkanMesh* mesh);
 
     uint32_t FindMemoryType(uint32_t typeFilter, VkMemoryPropertyFlags properties);
 
