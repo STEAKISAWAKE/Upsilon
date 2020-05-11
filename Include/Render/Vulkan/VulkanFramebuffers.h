@@ -2,20 +2,16 @@
 #ifndef __UPSILON_RENDER_VULKANFRAMEBUFFERS_H__
 #define __UPSILON_RENDER_VULKANFRAMEBUFFERS_H__
 
-class VulkanDevice;
-class VulkanSwapChain;
-class VulkanRenderPass;
+class VulkanRHI;
 
 class VulkanFramebuffers
 {
 
 public:
-    VulkanFramebuffers(VulkanDevice* device, VulkanSwapChain* swapChain, VulkanRenderPass* renderPass);
+    VulkanFramebuffers(VulkanRHI* rhi);
 
 public:
-    VulkanDevice* Device;
-    VulkanSwapChain* SwapChain;
-    VulkanRenderPass* RenderPass;
+    VulkanRHI* RHI;
 
 public:
     void Initalize();

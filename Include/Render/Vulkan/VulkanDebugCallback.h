@@ -3,17 +3,18 @@
 
 #include "vulkan/vulkan.h"
 
-class VulkanInstance;
+class VulkanRHI;
 
 class VulkanDebugCallback
 {
 
 public:
-    VulkanDebugCallback(VulkanInstance* instance);
+    VulkanDebugCallback(VulkanRHI* rhi);
 
 public:
     VkDebugUtilsMessengerEXT debugMessenger;
-    VulkanInstance* Instance;
+    
+    VulkanRHI* RHI;
 
 public:
     void Initalize();

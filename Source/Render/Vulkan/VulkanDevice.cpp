@@ -2,19 +2,21 @@
 
 #include <set>
 
+#include "Vulkan/VulkanRHI.h"
+
 #include "Vulkan/VulkanInstance.h"
 #include "Vulkan/VulkanPhysicalDevice.h"
 
 #include "Log.h"
 
-VulkanDevice::VulkanDevice(VulkanPhysicalDevice* physicalDevice)
+VulkanDevice::VulkanDevice(VulkanRHI* rhi)
 {
-    PhysicalDevice = physicalDevice;
+    RHI = rhi;
 }
 
 void VulkanDevice::Initalize()
 {
-    QueueFamilyIndices indices = PhysicalDevice->GetQueueFamilies();
+    QueueFamilyIndices indices = RHI->PhysicalDevice->GetQueueFamilies();
 
     std::vector<VkDeviceQueueCreateInfo> queueCreateInfos;
     std::set<uint32_t> uniqueQueueFamilies = {indices.graphicsFamily.value(), indices.presentFamily.value()};
@@ -51,7 +53,7 @@ void VulkanDevice::Initalize()
         createInfo.enabledLayerCount = 0;
     }
 
-    if(vkCreateDevice(PhysicalDevice->physicalDevice, &createInfo, nullptr, &device))
+    if(vkCreateDevice(RHI->PhysicalDevice->physicalDevice, &createInfo, nullptr, &device))
     {
         ULogError("Vulkan Device", "Could not create logical device!");
     }

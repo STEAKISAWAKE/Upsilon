@@ -1,20 +1,21 @@
 #include "VulkanRenderPass.h"
 
+#include "Vulkan/VulkanRHI.h"
+
 #include "Vulkan/VulkanDevice.h"
 #include "Vulkan/VulkanSwapChain.h"
 
 #include "Log.h"
 
-VulkanRenderPass::VulkanRenderPass(VulkanDevice* device, VulkanSwapChain* swapChain)
+VulkanRenderPass::VulkanRenderPass(VulkanRHI* rhi)
 {
-    Device = device;
-    SwapChain = swapChain;
+    RHI = rhi;
 }
 
 void VulkanRenderPass::Initalize()
 {
     VkAttachmentDescription colorAttachment = {};
-    colorAttachment.format = SwapChain->swapChainImageFormat;
+    colorAttachment.format = RHI->SwapChain->swapChainImageFormat;
     colorAttachment.samples = VK_SAMPLE_COUNT_1_BIT;
     colorAttachment.loadOp = VK_ATTACHMENT_LOAD_OP_CLEAR;
     colorAttachment.storeOp = VK_ATTACHMENT_STORE_OP_STORE;
@@ -49,7 +50,7 @@ void VulkanRenderPass::Initalize()
     renderPassInfo.dependencyCount = 1;
     renderPassInfo.pDependencies = &dependency;
 
-    if(vkCreateRenderPass(Device->device, &renderPassInfo, nullptr, &renderPass) != VK_SUCCESS)
+    if(vkCreateRenderPass(RHI->Device->device, &renderPassInfo, nullptr, &renderPass) != VK_SUCCESS)
     {
         ULogError("Vulkan Render Pass", "Could not create render pass!");
     }
@@ -58,5 +59,5 @@ void VulkanRenderPass::Initalize()
 
 void VulkanRenderPass::Cleanup()
 {
-    vkDestroyRenderPass(Device->device, renderPass, nullptr);
+    vkDestroyRenderPass(RHI->Device->device, renderPass, nullptr);
 }

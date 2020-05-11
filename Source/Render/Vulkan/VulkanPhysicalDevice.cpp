@@ -2,6 +2,8 @@
 
 #include <set>
 
+#include "Vulkan/VulkanRHI.h"
+
 #include "Vulkan/VulkanInstance.h"
 #include "Vulkan/VulkanSurface.h"
 
@@ -13,17 +15,16 @@ const std::vector<const char*>VulkanPhysicalDevice::deviceExtensions
 };
 
 
-VulkanPhysicalDevice::VulkanPhysicalDevice(VulkanInstance* instance, VulkanSurface* surface)
+VulkanPhysicalDevice::VulkanPhysicalDevice(VulkanRHI* rhi)
 {
-    Instance = instance;
-    Surface = surface;
+    RHI = rhi;
 }
 
 void VulkanPhysicalDevice::PickPhysicalDevice()
 {
 
     uint32_t deviceCount = 0;
-    vkEnumeratePhysicalDevices(Instance->instance, &deviceCount, nullptr);
+    vkEnumeratePhysicalDevices(RHI->Instance->instance, &deviceCount, nullptr);
 
     if(deviceCount == 0)
     {
@@ -31,11 +32,11 @@ void VulkanPhysicalDevice::PickPhysicalDevice()
     }
 
     std::vector<VkPhysicalDevice> devices(deviceCount);
-    vkEnumeratePhysicalDevices(Instance->instance, &deviceCount, devices.data());
+    vkEnumeratePhysicalDevices(RHI->Instance->instance, &deviceCount, devices.data());
 
     for(const auto& device : devices)
     {
-        if(IsDeviceSuitable(device, Surface))
+        if(IsDeviceSuitable(device, RHI->Surface))
         {
             physicalDevice = device;
             break;
@@ -51,7 +52,7 @@ void VulkanPhysicalDevice::PickPhysicalDevice()
 
 QueueFamilyIndices VulkanPhysicalDevice::GetQueueFamilies()
 {
-    return FindQueueFamilies(physicalDevice, Surface);
+    return FindQueueFamilies(physicalDevice, RHI->Surface);
 }
 
 QueueFamilyIndices VulkanPhysicalDevice::FindQueueFamilies(VkPhysicalDevice device, VulkanSurface* surface)

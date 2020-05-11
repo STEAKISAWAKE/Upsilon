@@ -1,12 +1,14 @@
 #include "VulkanDescriptorLayout.h"
 
-#include "Vulkan\VulkanDevice.h"
+#include "Vulkan/VulkanRHI.h"
+
+#include "Vulkan/VulkanDevice.h"
 
 #include "Log.h"
 
-VulkanDescriptorLayout::VulkanDescriptorLayout(VulkanDevice* device)
+VulkanDescriptorLayout::VulkanDescriptorLayout(VulkanRHI* rhi)
 {
-    Device = device;
+    RHI = rhi;
 }
 
 void VulkanDescriptorLayout::Initalize()
@@ -24,7 +26,7 @@ void VulkanDescriptorLayout::Initalize()
     layoutInfo.bindingCount = 1;
     layoutInfo.pBindings = &cubLayoutBinding;
 
-    if(vkCreateDescriptorSetLayout(Device->device, &layoutInfo, nullptr, &descriptorSetLayout) != VK_SUCCESS)
+    if(vkCreateDescriptorSetLayout(RHI->Device->device, &layoutInfo, nullptr, &descriptorSetLayout) != VK_SUCCESS)
     {
         ULogError("Vulkan Descriptor Set Layout", "Could not create descriptor set layout!");
     }
@@ -32,5 +34,5 @@ void VulkanDescriptorLayout::Initalize()
 
 void VulkanDescriptorLayout::Cleanup()
 {
-    vkDestroyDescriptorSetLayout(Device->device, descriptorSetLayout, nullptr);
+    vkDestroyDescriptorSetLayout(RHI->Device->device, descriptorSetLayout, nullptr);
 }

@@ -4,23 +4,18 @@
 
 #include "vulkan/vulkan.h"
 
-class VulkanPhysicalDevice;
-class VulkanDevice;
-class VulkanSwapChain;
-class VulkanCommandPool;
+class VulkanRHI;
+
 class VulkanMesh;
 
 class VulkanBuffers
 {
 
 public:
-    VulkanBuffers(VulkanPhysicalDevice* physicalDevice, VulkanDevice* device, VulkanSwapChain* swapChain,  VulkanCommandPool* commandPook);
+    VulkanBuffers(VulkanRHI* rhi);
 
 public:
-    VulkanPhysicalDevice* PhysicalDevice;
-    VulkanDevice* Device;
-    VulkanSwapChain* SwapChain;
-    VulkanCommandPool* CommandPool;
+    VulkanRHI* RHI;
 
 public:
     void CreateBuffer(VkDeviceSize size, VkBufferUsageFlags usage, VkMemoryPropertyFlags properties, VkBuffer& buffer, VkDeviceMemory& bufferMemory);

@@ -4,20 +4,18 @@
 
 #include "vulkan/vulkan.h"
 
-class VulkanPhysicalDevice;
-class VulkanDevice;
+class VulkanRHI;
 
 class VulkanCommandPool
 {
 
 public:
-    VulkanCommandPool(VulkanDevice* device, VulkanPhysicalDevice* physicalDevice);
+    VulkanCommandPool(VulkanRHI* rhi);
 
 public:
     VkCommandPool commandPool;
 
-    VulkanPhysicalDevice* PhysicalDevice;
-    VulkanDevice* Device;
+    VulkanRHI* RHI;
 
 public:
     void Initalize();

@@ -4,18 +4,18 @@
 
 #include "vulkan/vulkan.h"
 
-class VulkanDevice;
+class VulkanRHI;
 
 class VulkanDescriptorLayout
 {
 
 public:
-    VulkanDescriptorLayout(VulkanDevice* device);
+    VulkanDescriptorLayout(VulkanRHI* rhi);
 
 public:
     VkDescriptorSetLayout descriptorSetLayout;
 
-    VulkanDevice* Device;
+    VulkanRHI* RHI;
 
 public:
     void Initalize();

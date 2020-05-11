@@ -4,13 +4,13 @@
 
 #include "vulkan/vulkan.h"
 
-class VulkanPhysicalDevice;
+class VulkanRHI;
 
 class VulkanDevice
 {
 
 public:
-    VulkanDevice(VulkanPhysicalDevice* physicalDevice);
+    VulkanDevice(VulkanRHI* rhi);
 
 public:
     VkDevice device;
@@ -18,7 +18,7 @@ public:
     VkQueue presentQueue;
     static const int MAX_FRAMES_IN_FLIGHT = 2;
 
-    VulkanPhysicalDevice* PhysicalDevice;
+    VulkanRHI* RHI;
 
 public:
     void Initalize();

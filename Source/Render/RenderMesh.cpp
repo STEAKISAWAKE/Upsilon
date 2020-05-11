@@ -50,7 +50,7 @@ bool RenderMesh::LoadMesh(std::string path)
 			 n = mesh->mNormals[i];
 
 		// Create verts
-		//Vertices.push_back(Vertex3D(glm::vec3(pos.x, pos.y, pos.z), { 0.5f, 0.5f, 0.5f } /*, { n.x, n.y, n.z } */));
+		Vertices.push_back(Vertex2D(glm::vec3(pos.x, pos.y, pos.z), { 0.5f, 0.5f, 0.5f } /*, { n.x, n.y, n.z } */));
 	}
 
 	//// Fill vertices texture coordinates

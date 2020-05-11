@@ -4,20 +4,19 @@
 
 #include "vulkan/vulkan.h"
 
-class VulkanInstance;
 class Render;
+class VulkanRHI;
 
 class VulkanSurface
 {
 
 public:
-    VulkanSurface(VulkanInstance* instance, Render* window);
+    VulkanSurface(VulkanRHI* rhi);
 
 public:
     VkSurfaceKHR surface;
 
-    VulkanInstance* Instance;
-    Render* Renderer;
+    VulkanRHI* RHI;
 
 public:
     void Initalize();

@@ -1,14 +1,15 @@
 #include "Vulkan/VulkanSemaphores.h"
 
+#include "Vulkan/VulkanRHI.h"
+
 #include "Vulkan/VulkanDevice.h"
 #include "Vulkan/VulkanSwapChain.h"
 
 #include "Log.h"
 
-VulkanSemaphores::VulkanSemaphores(VulkanDevice* device, VulkanSwapChain* swapChain)
+VulkanSemaphores::VulkanSemaphores(VulkanRHI* rhi)
 {
-    Device = device;
-    SwapChain = swapChain;
+    RHI = rhi;
 }
 
 void VulkanSemaphores::Initalize()
@@ -16,7 +17,7 @@ void VulkanSemaphores::Initalize()
     imageAvailableSemaphore.resize(VulkanDevice::MAX_FRAMES_IN_FLIGHT);
     renderFinishedSemaphore.resize(VulkanDevice::MAX_FRAMES_IN_FLIGHT);
     inFlightFences.resize(VulkanDevice::MAX_FRAMES_IN_FLIGHT);
-    imagesInFlight.resize(SwapChain->swapChainImages.size(), VK_NULL_HANDLE);
+    imagesInFlight.resize(RHI->SwapChain->swapChainImages.size(), VK_NULL_HANDLE);
 
     VkSemaphoreCreateInfo semaphoreInfo = {};
     semaphoreInfo.sType = VK_STRUCTURE_TYPE_SEMAPHORE_CREATE_INFO;
@@ -27,9 +28,9 @@ void VulkanSemaphores::Initalize()
 
     for(size_t i = 0; i < VulkanDevice::MAX_FRAMES_IN_FLIGHT; i++)
     {
-        if(vkCreateSemaphore(Device->device, &semaphoreInfo, nullptr, &imageAvailableSemaphore[i]) != VK_SUCCESS ||
-           vkCreateSemaphore(Device->device, &semaphoreInfo, nullptr, &renderFinishedSemaphore[i]) != VK_SUCCESS ||
-           vkCreateFence(Device->device, &fenceInfo, nullptr, &inFlightFences[i]) != VK_SUCCESS)
+        if(vkCreateSemaphore(RHI->Device->device, &semaphoreInfo, nullptr, &imageAvailableSemaphore[i]) != VK_SUCCESS ||
+           vkCreateSemaphore(RHI->Device->device, &semaphoreInfo, nullptr, &renderFinishedSemaphore[i]) != VK_SUCCESS ||
+           vkCreateFence(RHI->Device->device, &fenceInfo, nullptr, &inFlightFences[i]) != VK_SUCCESS)
         {
             ULogError("Vulkan Semaphore", "Could not create semaphores!");
         }
@@ -40,9 +41,9 @@ void VulkanSemaphores::Cleanup()
 {
     for(size_t i = 0; i < VulkanDevice::MAX_FRAMES_IN_FLIGHT; i++)
     {
-        vkDestroySemaphore(Device->device, renderFinishedSemaphore[i], nullptr);
-        vkDestroySemaphore(Device->device, imageAvailableSemaphore[i], nullptr);
-        vkDestroyFence(Device->device, inFlightFences[i], nullptr);
+        vkDestroySemaphore(RHI->Device->device, renderFinishedSemaphore[i], nullptr);
+        vkDestroySemaphore(RHI->Device->device, imageAvailableSemaphore[i], nullptr);
+        vkDestroyFence(RHI->Device->device, inFlightFences[i], nullptr);
     }
 }
 

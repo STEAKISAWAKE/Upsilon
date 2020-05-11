@@ -6,19 +6,16 @@
 
 #include "vulkan/vulkan.h"
 
-class VulkanDevice;
-class VulkanSwapChain;
+class VulkanRHI;
 
 class VulkanImageViews
 {
 
 public:
-    VulkanImageViews(VulkanDevice* device, VulkanSwapChain* swapChain);
+    VulkanImageViews(VulkanRHI* rhi);
 
 public:
-    
-    VulkanDevice* Device;
-    VulkanSwapChain* SwapChain;
+    VulkanRHI* RHI;
 
 public:
     void Initalize();

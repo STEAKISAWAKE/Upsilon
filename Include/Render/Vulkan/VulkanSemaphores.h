@@ -6,14 +6,13 @@
 
 #include "vulkan/vulkan.h"
 
-class VulkanDevice;
-class VulkanSwapChain;
+class VulkanRHI;
 
 class VulkanSemaphores
 {
 
 public:
-    VulkanSemaphores(VulkanDevice* device, VulkanSwapChain* swapChain);
+    VulkanSemaphores(VulkanRHI* rhi);
 
 public:
     std::vector<VkSemaphore> imageAvailableSemaphore;
@@ -21,8 +20,7 @@ public:
     std::vector<VkFence> inFlightFences;
     std::vector<VkFence> imagesInFlight;
 
-    VulkanDevice* Device;
-    VulkanSwapChain* SwapChain;
+    VulkanRHI* RHI;
 
 public:
     void Initalize();

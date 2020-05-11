@@ -1,5 +1,7 @@
 #include "Vulkan/VulkanDebugCallback.h"
 
+#include "Vulkan/VulkanRHI.h"
+
 #include "Vulkan/VulkanInstance.h"
 
 #include "Log.h"
@@ -21,9 +23,9 @@ void DestroyDebugUtilsMessengerEXT(VkInstance instance, VkDebugUtilsMessengerEXT
     }
 }
 
-VulkanDebugCallback::VulkanDebugCallback(VulkanInstance* instance)
+VulkanDebugCallback::VulkanDebugCallback(VulkanRHI* rhi)
 {
-    Instance = instance;
+    RHI = rhi;
 }
 
 void VulkanDebugCallback::Initalize()
@@ -34,7 +36,7 @@ void VulkanDebugCallback::Initalize()
     VkDebugUtilsMessengerCreateInfoEXT createInfo = {};
     PopulateDebugMessengerCreateInfo(createInfo);
 
-    if(CreateDebugUtilsMessengerEXT(Instance->instance, &createInfo, nullptr, &debugMessenger) != VK_SUCCESS)
+    if(CreateDebugUtilsMessengerEXT(RHI->Instance->instance, &createInfo, nullptr, &debugMessenger) != VK_SUCCESS)
     {
         ULogError("Vulkan Debug Messenger", "Could not setup debug messenger!");
     }
@@ -44,7 +46,7 @@ void VulkanDebugCallback::Cleanup()
 {
     if(VulkanInstance::enableValidationLayers)
     {
-        DestroyDebugUtilsMessengerEXT(Instance->instance, debugMessenger, nullptr);
+        DestroyDebugUtilsMessengerEXT(RHI->Instance->instance, debugMessenger, nullptr);
     }
 }
 

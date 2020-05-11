@@ -3,7 +3,9 @@
 
 #include <algorithm> // std::min & std::max
 
+#include "Render.h"
 #include "RenderWindow.h"
+#include "Vulkan/VulkanRHI.h"
 
 #include "Vulkan/VulkanPhysicalDevice.h"
 #include "Vulkan/VulkanDevice.h"
@@ -11,21 +13,18 @@
 
 #include "Log.h"
 
-VulkanSwapChain::VulkanSwapChain(RenderWindow* window, VulkanPhysicalDevice* physicalDevice, VulkanDevice* device, VulkanSurface* surface)
+VulkanSwapChain::VulkanSwapChain(VulkanRHI* rhi)
 {
-    Window = window;
-    PhysicalDevice = physicalDevice;
-    Device = device;
-    Surface = surface;
+    RHI = rhi;
 }
 
 void VulkanSwapChain::Initalize()
 {
-    SwapChainSupportDetails swapChainSupport = VulkanPhysicalDevice::QuerySwapChainSupport(PhysicalDevice->physicalDevice, Surface);
+    SwapChainSupportDetails swapChainSupport = VulkanPhysicalDevice::QuerySwapChainSupport(RHI->PhysicalDevice->physicalDevice, RHI->Surface);
 
     VkSurfaceFormatKHR surfaceFormat = ChooseSwapSurfaceFormat(swapChainSupport.formats);
     VkPresentModeKHR presentMode = ChooseSwapPresentMode(swapChainSupport.presentModes);
-    VkExtent2D extent = ChooseSwapExtent(Window, swapChainSupport.capabilities);
+    VkExtent2D extent = ChooseSwapExtent(&RHI->Renderer->Window, swapChainSupport.capabilities);
 
     uint32_t imageCount = swapChainSupport.capabilities.minImageCount + 1;
 
@@ -36,7 +35,7 @@ void VulkanSwapChain::Initalize()
 
     VkSwapchainCreateInfoKHR createInfo = {};
     createInfo.sType = VK_STRUCTURE_TYPE_SWAPCHAIN_CREATE_INFO_KHR;
-    createInfo.surface = Surface->surface;
+    createInfo.surface = RHI->Surface->surface;
     createInfo.minImageCount = imageCount;
     createInfo.imageFormat = surfaceFormat.format;
     createInfo.imageColorSpace = surfaceFormat.colorSpace;
@@ -44,7 +43,7 @@ void VulkanSwapChain::Initalize()
     createInfo.imageArrayLayers = 1;
     createInfo.imageUsage = VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT;
 
-    QueueFamilyIndices indices = PhysicalDevice->GetQueueFamilies();
+    QueueFamilyIndices indices = RHI->PhysicalDevice->GetQueueFamilies();
     uint32_t queueFamilyIndices[] = {indices.graphicsFamily.value(), indices.presentFamily.value()};
 
     if(indices.graphicsFamily != indices.presentFamily)
@@ -66,14 +65,14 @@ void VulkanSwapChain::Initalize()
     createInfo.clipped = VK_TRUE;
     createInfo.oldSwapchain = VK_NULL_HANDLE;
     
-    if(vkCreateSwapchainKHR(Device->device, &createInfo, nullptr, &swapChain) != VK_SUCCESS)
+    if(vkCreateSwapchainKHR(RHI->Device->device, &createInfo, nullptr, &swapChain) != VK_SUCCESS)
     {
         ULogError("Vulkan Swapchain", "Could not create swapchain!");
     }
 
-    vkGetSwapchainImagesKHR(Device->device, swapChain, &imageCount, nullptr);
+    vkGetSwapchainImagesKHR(RHI->Device->device, swapChain, &imageCount, nullptr);
     swapChainImages.resize(imageCount);
-    vkGetSwapchainImagesKHR(Device->device, swapChain, &imageCount, swapChainImages.data());
+    vkGetSwapchainImagesKHR(RHI->Device->device, swapChain, &imageCount, swapChainImages.data());
 
     swapChainImageFormat = surfaceFormat.format;
     swapChainExtent = extent;
@@ -81,7 +80,7 @@ void VulkanSwapChain::Initalize()
 
 void VulkanSwapChain::Cleanup()
 {
-    vkDestroySwapchainKHR(Device->device, swapChain, nullptr);
+    vkDestroySwapchainKHR(RHI->Device->device, swapChain, nullptr);
 }
 
 VkSurfaceFormatKHR VulkanSwapChain::ChooseSwapSurfaceFormat(const std::vector<VkSurfaceFormatKHR>& availableFormats)

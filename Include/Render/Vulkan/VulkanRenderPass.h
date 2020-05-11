@@ -4,20 +4,18 @@
 
 #include "vulkan/vulkan.h"
 
-class VulkanDevice;
-class VulkanSwapChain;
+class VulkanRHI;
 
 class VulkanRenderPass
 {
 
 public:
-    VulkanRenderPass(VulkanDevice* device, VulkanSwapChain* swapChain);
+    VulkanRenderPass(VulkanRHI* rhi);
 
 public:
     VkRenderPass renderPass;
 
-    VulkanDevice* Device;
-    VulkanSwapChain* SwapChain;
+    VulkanRHI* RHI;
 
 public:
     void Initalize();

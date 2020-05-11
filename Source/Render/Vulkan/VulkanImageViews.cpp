@@ -1,27 +1,28 @@
 #include "Vulkan/VulkanImageViews.h"
 
+#include "Vulkan/VulkanRHI.h"
+
 #include "Vulkan/VulkanDevice.h"
 #include "Vulkan/VulkanSwapChain.h"
 
 #include "Log.h"
 
-VulkanImageViews::VulkanImageViews(VulkanDevice* device, VulkanSwapChain* swapChain)
+VulkanImageViews::VulkanImageViews(VulkanRHI* rhi)
 {
-    Device = device;
-    SwapChain = swapChain;
+    RHI = rhi;
 }
 
 void VulkanImageViews::Initalize()
 {
-    SwapChain->swapChainImageViews.resize(SwapChain->swapChainImages.size());
+    RHI->SwapChain->swapChainImageViews.resize(RHI->SwapChain->swapChainImages.size());
 
-    for(size_t i = 0; i < SwapChain->swapChainImages.size(); i++)
+    for(size_t i = 0; i < RHI->SwapChain->swapChainImages.size(); i++)
     {
         VkImageViewCreateInfo createInfo = {};
         createInfo.sType = VK_STRUCTURE_TYPE_IMAGE_VIEW_CREATE_INFO;
-        createInfo.image = SwapChain->swapChainImages[i];
+        createInfo.image = RHI->SwapChain->swapChainImages[i];
         createInfo.viewType = VK_IMAGE_VIEW_TYPE_2D;
-        createInfo.format = SwapChain->swapChainImageFormat;
+        createInfo.format = RHI->SwapChain->swapChainImageFormat;
 
         createInfo.components.r = VK_COMPONENT_SWIZZLE_IDENTITY;
         createInfo.components.g = VK_COMPONENT_SWIZZLE_IDENTITY;
@@ -34,7 +35,7 @@ void VulkanImageViews::Initalize()
         createInfo.subresourceRange.baseArrayLayer = 0;
         createInfo.subresourceRange.layerCount = 1;
 
-        if(vkCreateImageView(Device->device, &createInfo, nullptr, &SwapChain->swapChainImageViews[i]) != VK_SUCCESS)
+        if(vkCreateImageView(RHI->Device->device, &createInfo, nullptr, &RHI->SwapChain->swapChainImageViews[i]) != VK_SUCCESS)
         {
             ULogError("Vulkan Image Views", "Could not create an image view!");
         }
@@ -45,8 +46,8 @@ void VulkanImageViews::Initalize()
 
 void VulkanImageViews::Cleanup()
 {
-    for(auto imageView : SwapChain->swapChainImageViews)
+    for(auto imageView : RHI->SwapChain->swapChainImageViews)
     {
-        vkDestroyImageView(Device->device, imageView, nullptr);
+        vkDestroyImageView(RHI->Device->device, imageView, nullptr);
     }
 }

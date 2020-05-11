@@ -22,6 +22,7 @@ int main()
     Shader* frag = render.RHI->CreateShader(0, E_FragmentShader, RenderRHI::LoadShader("C:\\Users\\Steak\\Documents\\GitHub\\Upsilon\\Shaders\\frag.spv"));
 
     RenderMesh* mesh = render.RHI->CreateMesh();
+    RenderMesh* mesh2 = render.RHI->CreateMesh();
 
     const std::vector<Vertex2D> vertices = {
         {{-0.5f, -0.5f}, {1.0f, 0.0f, 0.0f}},
@@ -44,10 +45,22 @@ int main()
     static_cast<VulkanMesh*>(mesh)->CUB.view = view;
     static_cast<VulkanMesh*>(mesh)->CUB.projection = proj;
 
+
+    glm::mat4 model2 = glm::translate(glm::rotate(glm::mat4(1.0f), glm::radians(65.0f), glm::vec3(0.0f, 0.0f, 1.0f)), glm::vec3(-4.0f, 0.0f, 0.0f));
+
+    static_cast<VulkanMesh*>(mesh2)->CUB.model = model2;
+    static_cast<VulkanMesh*>(mesh2)->CUB.view = view;
+    static_cast<VulkanMesh*>(mesh2)->CUB.projection = proj;
+
     static_cast<VulkanMesh*>(mesh)->CUB.projection[1][1] *= -1;
+    static_cast<VulkanMesh*>(mesh2)->CUB.projection[1][1] *= -1;
+
 
     mesh->Vertices = vertices;
     mesh->Indices = indices;
+
+    mesh2->Vertices = vertices;
+    mesh2->Indices = indices;
 
     render.Initalize();
 

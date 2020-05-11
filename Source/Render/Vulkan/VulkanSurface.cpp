@@ -2,19 +2,21 @@
 
 #include <GLFW/glfw3.h>
 
-#include "Vulkan/VulkanInstance.h"
 #include "Render.h"
+#include "Vulkan/VulkanRHI.h"
+
+#include "Vulkan/VulkanInstance.h"
+
 #include "Log.h"
 
-VulkanSurface::VulkanSurface(VulkanInstance* instance, Render* render)
+VulkanSurface::VulkanSurface(VulkanRHI* rhi)
 {
-    Instance = instance;
-    Renderer = render;
+    RHI = rhi;
 }
 
 void VulkanSurface::Initalize()
 {
-    if(glfwCreateWindowSurface(Instance->instance, Renderer->Window.glfwWin, nullptr, &surface) != VK_SUCCESS)
+    if(glfwCreateWindowSurface(RHI->Instance->instance, RHI->Renderer->Window.glfwWin, nullptr, &surface) != VK_SUCCESS)
     {
         ULog("Vulkan Surface", "Could not create window surface!");
     }
@@ -22,5 +24,5 @@ void VulkanSurface::Initalize()
 
 void VulkanSurface::Cleanup()
 {
-    vkDestroySurfaceKHR(Instance->instance, surface, nullptr);
+    vkDestroySurfaceKHR(RHI->Instance->instance, surface, nullptr);
 }

@@ -1,29 +1,30 @@
 #include "Vulkan/VulkanDescriptorPool.h"
 
+#include "Vulkan/VulkanRHI.h"
+
 #include "Vulkan/VulkanDevice.h"
 #include "Vulkan/VulkanSwapChain.h"
 
 #include "Log.h"
 
-VulkanDescriptorPool::VulkanDescriptorPool(VulkanDevice* device, VulkanSwapChain* swapChain)
+VulkanDescriptorPool::VulkanDescriptorPool(VulkanRHI* rhi)
 {
-    Device = device;
-    SwapChain = swapChain;
+    RHI = rhi;
 }
 
 void VulkanDescriptorPool::Initalize()
 {
     VkDescriptorPoolSize poolSize = {};
     poolSize.type = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
-    poolSize.descriptorCount = static_cast<uint32_t>(SwapChain->swapChainImages.size());
+    poolSize.descriptorCount = static_cast<uint32_t>(RHI->SwapChain->swapChainImages.size() * RHI->Meshes.size());
 
     VkDescriptorPoolCreateInfo poolInfo = {};
     poolInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_POOL_CREATE_INFO;
     poolInfo.poolSizeCount = 1;
     poolInfo.pPoolSizes = &poolSize;
-    poolInfo.maxSets = static_cast<uint32_t>(SwapChain->swapChainImages.size());
+    poolInfo.maxSets = static_cast<uint32_t>(RHI->SwapChain->swapChainImages.size() * RHI->Meshes.size());
 
-    if(vkCreateDescriptorPool(Device->device, &poolInfo, nullptr, &descriptorPool) != VK_SUCCESS)
+    if(vkCreateDescriptorPool(RHI->Device->device, &poolInfo, nullptr, &descriptorPool) != VK_SUCCESS)
     {
         ULogError("Vulkan Descriptor Pool", "Could not create descriptor pool!");
     }
@@ -31,5 +32,5 @@ void VulkanDescriptorPool::Initalize()
 
 void VulkanDescriptorPool::Cleanup()
 {
-    vkDestroyDescriptorPool(Device->device, descriptorPool, nullptr);
+    vkDestroyDescriptorPool(RHI->Device->device, descriptorPool, nullptr);
 }

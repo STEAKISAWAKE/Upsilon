@@ -7,16 +7,13 @@
 #include "vulkan/vulkan.h"
 
 class RenderWindow;
-
-class VulkanPhysicalDevice;
-class VulkanDevice;
-class VulkanSurface;
+class VulkanRHI;
 
 class VulkanSwapChain
 {
 
 public:
-    VulkanSwapChain(RenderWindow* window, VulkanPhysicalDevice* physicalDevice, VulkanDevice* device, VulkanSurface* surface);
+    VulkanSwapChain(VulkanRHI* rhi);
 
 public:
 
@@ -26,13 +23,8 @@ public:
     std::vector<VkImage> swapChainImages;
     std::vector<VkImageView> swapChainImageViews;
     std::vector<VkFramebuffer> swapChainFramebuffers;
- 
-    RenderWindow* Window;
 
-    VulkanPhysicalDevice* PhysicalDevice;
-    VulkanDevice* Device;
-    VulkanSurface* Surface;
-
+    VulkanRHI* RHI;
 
 public:
     void Initalize();

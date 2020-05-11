@@ -4,20 +4,18 @@
 
 #include "vulkan/vulkan.h"
 
-class VulkanDevice;
-class VulkanSwapChain;
+class VulkanRHI;
 
 class VulkanDescriptorPool
 {
 
 public:
-    VulkanDescriptorPool(VulkanDevice* Device, VulkanSwapChain* swapChain);
+    VulkanDescriptorPool(VulkanRHI* rhi);
 
 public:
     VkDescriptorPool descriptorPool;
 
-    VulkanDevice* Device;
-    VulkanSwapChain* SwapChain;
+    VulkanRHI* RHI;
 
 public:
     void Initalize();

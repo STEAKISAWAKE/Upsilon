@@ -7,7 +7,8 @@
 
 #include "vulkan/vulkan.h"
 
-class VulkanInstance;
+class VulkanRHI;
+
 class VulkanSurface;
 
 struct QueueFamilyIndices;
@@ -17,15 +18,13 @@ class VulkanPhysicalDevice
 {
 
 public:
-    VulkanPhysicalDevice(VulkanInstance* instance, VulkanSurface* surface);
+    VulkanPhysicalDevice(VulkanRHI* rhi);
 
 public:
     VkPhysicalDevice physicalDevice = VK_NULL_HANDLE;
-
-    VulkanInstance* Instance;
-    VulkanSurface*  Surface;
-
     static const std::vector<const char*> deviceExtensions;
+
+    VulkanRHI* RHI;
 
 public:
     void PickPhysicalDevice();

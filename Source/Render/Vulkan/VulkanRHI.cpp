@@ -33,25 +33,25 @@ VulkanRHI::VulkanRHI(Render* renderer)
 {
     Renderer = renderer;
 
-    Instance = new VulkanInstance();
-    DebugCallback = new VulkanDebugCallback(Instance);
-    Surface = new VulkanSurface(Instance, Renderer);
-    PhysicalDevice = new VulkanPhysicalDevice(Instance, Surface);
-    Device = new VulkanDevice(PhysicalDevice);
-    SwapChain = new VulkanSwapChain(&Renderer->Window, PhysicalDevice, Device, Surface);
-    DescriptorLayout = new VulkanDescriptorLayout(Device);
-    DescriptorPool = new VulkanDescriptorPool(Device, SwapChain);
-    ImageViews = new VulkanImageViews(Device, SwapChain);
-    CommandPool = new VulkanCommandPool(Device, PhysicalDevice);
-    Buffers = new VulkanBuffers(PhysicalDevice, Device, SwapChain, CommandPool);
-    RenderPass = new VulkanRenderPass(Device, SwapChain);
-    Framebuffers = new VulkanFramebuffers(Device, SwapChain, RenderPass);
+    Instance         =   new VulkanInstance();
+    DebugCallback    =   new VulkanDebugCallback(this);
+    Surface          =   new VulkanSurface(this);
+    PhysicalDevice   =   new VulkanPhysicalDevice(this);
+    Device           =   new VulkanDevice(this);
+    SwapChain        =   new VulkanSwapChain(this);
+    DescriptorLayout =   new VulkanDescriptorLayout(this);
+    DescriptorPool   =   new VulkanDescriptorPool(this);
+    ImageViews       =   new VulkanImageViews(this);
+    CommandPool      =   new VulkanCommandPool(this);
+    Buffers          =   new VulkanBuffers(this);
+    RenderPass       =   new VulkanRenderPass(this);
+    Framebuffers     =   new VulkanFramebuffers(this);
 
 
     ShaderPools.push_back(CreateShaderPool()); // We must have at least one shader pool
 
     CommandBuffers = new VulkanCommandBuffers(this);
-    Semaphores = new VulkanSemaphores(Device, SwapChain);
+    Semaphores = new VulkanSemaphores(this);
 
 }
 
